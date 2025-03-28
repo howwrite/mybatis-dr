@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.howwrite.mapper.DynamicSqlMapper">
+
+    <sql id="queryCondition">
+        <where>
+            <if test="params.condition != null and params.condition.conditions != null and params.condition.conditions.size() > 0">
+                <foreach collection="params.condition.conditions" item="condition" separator=" AND ">
+                    <choose>
+                        <when test="condition.operator == 'IN' or condition.operator == 'NOT IN'">
+                            ${condition.field} ${condition.operator}
+                            <foreach collection="condition.value" item="val" open="(" separator="," close=")">
+                                #{val}
+                            </foreach>
+                        </when>
+                        <when test="condition.operator == 'IS NULL' or condition.operator == 'IS NOT NULL'">
+                            ${condition.field} ${condition.operator}
+                        </when>
+                        <otherwise>
+                            ${condition.field} ${condition.operator} #{condition.value}
+                        </otherwise>
+                    </choose>
+                </foreach>
+            </if>
+        </where>
+    </sql>
+
+    <!-- 插入记录 -->
+    <insert id="insert" parameterType="map">
+        INSERT INTO ${params.tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="params.entity" index="key" item="value">
+                ${key},
+            </foreach>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <foreach collection="params.entity" index="key" item="value">
+                #{value},
+            </foreach>
+        </trim>
+    </insert>
+
+    <!-- 批量插入记录 -->
+    <insert id="batchInsert" parameterType="map">
+        INSERT INTO ${params.tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="params.entities[0]" index="key" item="value">
+                ${key},
+            </foreach>
+        </trim>
+        VALUES
+        <foreach collection="params.entities" item="entity" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <foreach collection="entity" index="key" item="value">
+                    #{value},
+                </foreach>
+            </trim>
+        </foreach>
+    </insert>
+
+    <!-- 更新记录 -->
+    <update id="update" parameterType="map">
+        UPDATE ${params.tableName}
+        <set>
+            <foreach collection="params.entity" index="key" item="value" separator=",">
+                <if test="key != params.primaryKey">
+                    ${key} = #{value}
+                </if>
+            </foreach>
+        </set>
+        <include refid="queryCondition"/>
+    </update>
+
+    <!-- 根据条件删除记录 -->
+    <delete id="delete" parameterType="map">
+        DELETE FROM ${params.tableName}
+        <include refid="queryCondition"/>
+    </delete>
+
+
+    <!-- 根据条件查询记录 -->
+    <select id="findByCondition" parameterType="map" resultType="map">
+        SELECT * FROM ${params.tableName}
+        <include refid="queryCondition"/>
+    </select>
+
+
+    <!-- 根据条件查询记录数 -->
+    <select id="count" parameterType="map" resultType="long">
+        SELECT COUNT(*) FROM ${params.tableName}
+        <include refid="queryCondition"/>
+    </select>
+</mapper> 
