@@ -1,6 +1,7 @@
 package com.github.howwrite.util;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.util.StringUtils;
 import com.github.howwrite.annotation.DrField;
 import com.github.howwrite.annotation.DrFieldIgnore;
 import com.github.howwrite.annotation.DrTable;
@@ -11,10 +12,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -60,7 +58,7 @@ public class EntityHelper {
 
             // 解析字段
             Map<String, Field> fieldMap = new HashMap<>();
-            List<Field> jsonFields = new ArrayList<>();
+            Map<String, Field> jsonFields = new HashMap<>();
 
             Field[] fields = entityClass.getDeclaredFields();
             for (Field field : fields) {
@@ -74,13 +72,17 @@ public class EntityHelper {
                 field.setAccessible(true);
 
                 DrField drFieldAnnotation = field.getAnnotation(DrField.class);
-                if (drFieldAnnotation != null) {
-                    // 有@Field注解的字段
+                if (drFieldAnnotation != null && drFieldAnnotation.query()) {
+                    // 有@Field注解且是query的字段
                     String columnName = drFieldAnnotation.value();
                     fieldMap.put(columnName, field);
                 } else {
-                    // 没有@Field注解的字段，添加到JSON字段列表
-                    jsonFields.add(field);
+                    // 否则是json中的字段
+                    String columnName = Optional.ofNullable(drFieldAnnotation).map(DrField::value).orElse(null);
+                    if (columnName == null || columnName.isBlank()) {
+                        columnName = field.getName();
+                    }
+                    jsonFields.put(columnName, field);
                 }
             }
 
@@ -122,15 +124,18 @@ public class EntityHelper {
             }
         }
 
-        // 处理JSON字段
-        for (Field jsonField : tableInfo.getJsonFields()) {
+        // 处理json字段
+        for (Map.Entry<String, Field> entry : tableInfo.getJsonFields().entrySet()) {
+            String columnName = entry.getKey();
+            Field field = entry.getValue();
+
             try {
-                Object value = jsonField.get(entity);
+                Object value = field.get(entity);
                 if (value != null) {
-                    featureMap.put(jsonField.getName(), value);
+                    featureMap.put(columnName, value);
                 }
             } catch (Exception e) {
-                LOGGER.error("Error getting JSON field value: " + jsonField.getName(), e);
+                LOGGER.error("Error getting json field value: " + field.getName(), e);
             }
         }
 
@@ -184,13 +189,15 @@ public class EntityHelper {
 
             // 处理JSON字段
             String featureJson = (String) map.get(tableInfo.getFeatureColumnName());
-            if (featureJson != null) {
+            if (featureJson != null && !featureJson.isBlank()) {
                 Map<String, Object> jsonFields = JSON.parseObject(featureJson);
-                for (Field jsonField : tableInfo.getJsonFields()) {
-                    Object value = jsonFields.get(jsonField.getName());
+                for (Map.Entry<String, Field> entry : tableInfo.getJsonFields().entrySet()) {
+                    String columnName = entry.getKey();
+                    Field field = entry.getValue();
+                    Object value = jsonFields.get(columnName);
 
                     if (value != null) {
-                        assignField(jsonField, entity, value);
+                        assignField(field, entity, value);
                     }
                 }
             }

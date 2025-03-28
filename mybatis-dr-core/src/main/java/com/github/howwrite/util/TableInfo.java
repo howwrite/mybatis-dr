@@ -50,7 +50,7 @@ public class TableInfo<T> {
     /**
      * JSON字段列表，这些字段将被合并到feature字段中
      */
-    private List<Field> jsonFields;
+    private Map<String, Field> jsonFields;
 
     public String getTableName() {
         return tableName;
@@ -84,11 +84,11 @@ public class TableInfo<T> {
         this.fieldMap = fieldMap;
     }
 
-    public List<Field> getJsonFields() {
+    public Map<String, Field> getJsonFields() {
         return jsonFields;
     }
 
-    public void setJsonFields(List<Field> jsonFields) {
+    public void setJsonFields(Map<String, Field> jsonFields) {
         this.jsonFields = jsonFields;
     }
 
