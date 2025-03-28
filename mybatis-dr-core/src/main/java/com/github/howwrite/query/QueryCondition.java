@@ -73,11 +73,25 @@ public abstract class QueryCondition {
     private final List<Condition> conditions = new ArrayList<>();
 
     /**
+     * 排序字段列表
+     */
+    private final List<Order> orders = new ArrayList<>();
+
+    private Integer limit;
+
+    private Integer offset;
+
+    public void setPageInfo(int pageNo, int pageSize) {
+        offset = (pageNo - 1) * pageSize;
+        limit = pageSize;
+    }
+
+    /**
      * 添加条件
      *
-     * @param field 字段名
+     * @param field    字段名
      * @param operator 操作符
-     * @param value 值
+     * @param value    值
      * @return 当前对象
      */
     public QueryCondition addCondition(String field, String operator, Object value) {
@@ -154,7 +168,7 @@ public abstract class QueryCondition {
     /**
      * 添加IN条件
      *
-     * @param field 字段名
+     * @param field  字段名
      * @param values 值集合
      * @return 当前对象
      */
@@ -165,7 +179,7 @@ public abstract class QueryCondition {
     /**
      * 添加NOT IN条件
      *
-     * @param field 字段名
+     * @param field  字段名
      * @param values 值集合
      * @return 当前对象
      */
@@ -226,6 +240,67 @@ public abstract class QueryCondition {
         return addCondition(field, OPERATOR_IS_NOT_NULL, null);
     }
 
+    public QueryCondition addOrder(String field, String orderMode) {
+        orders.add(new Order(field, orderMode));
+        return this;
+    }
+
+    public QueryCondition desc(String field) {
+        return addOrder(field, "desc");
+    }
+
+
+    public QueryCondition asc(String field) {
+        return addOrder(field, "asc");
+    }
+
+    public Integer getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    /**
+     * 内部排序类
+     */
+    public static class Order {
+        /**
+         * 字段名
+         */
+        private final String field;
+        /**
+         * 排序字段
+         */
+        private final String orderMode;
+
+        public Order(String field, String orderMode) {
+            this.field = field;
+            this.orderMode = orderMode;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public String getOrderMode() {
+            return orderMode;
+        }
+    }
+
     /**
      * 内部条件类
      */
@@ -248,9 +323,9 @@ public abstract class QueryCondition {
         /**
          * 构造函数
          *
-         * @param field 字段名
+         * @param field    字段名
          * @param operator 操作符
-         * @param value 值
+         * @param value    值
          */
         public Condition(String field, String operator, Object value) {
             this.field = field;
@@ -281,9 +356,5 @@ public abstract class QueryCondition {
         public void setValue(Object value) {
             this.value = value;
         }
-    }
-
-    public List<Condition> getConditions() {
-        return conditions;
     }
 }

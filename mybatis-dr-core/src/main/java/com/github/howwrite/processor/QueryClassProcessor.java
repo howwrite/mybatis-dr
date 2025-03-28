@@ -246,6 +246,24 @@ public class QueryClassProcessor extends AbstractProcessor {
         out.println("        return (" + queryClassName + ") isNotNull(\"" + columnName + "\");");
         out.println("    }");
         out.println();
+
+        // desc
+        out.println("    /**");
+        out.println("     * " + fieldName + " 降序排序");
+        out.println("     */");
+        out.println("    public " + queryClassName + " desc" + capitalizedFieldName + "() {");
+        out.println("        return (" + queryClassName + ") desc(\"" + columnName + "\");");
+        out.println("    }");
+        out.println();
+
+        // asc
+        out.println("    /**");
+        out.println("     * " + fieldName + " 升序排序");
+        out.println("     */");
+        out.println("    public " + queryClassName + " asc" + capitalizedFieldName + "() {");
+        out.println("        return (" + queryClassName + ") asc(\"" + columnName + "\");");
+        out.println("    }");
+        out.println();
     }
 
     /**

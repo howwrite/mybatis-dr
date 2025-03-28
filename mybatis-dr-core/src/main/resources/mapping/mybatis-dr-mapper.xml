@@ -26,6 +26,19 @@
                 and deleted = 0
             </if>
         </where>
+
+        <if test="params.condition != null and params.condition.orders != null and params.condition.orders.size() > 0">
+            <foreach collection="params.condition.orders" item="order" separator="," open="order by">
+                ${order.field} ${order.orderMode}
+            </foreach>
+        </if>
+
+        <if test="params.condition.limit != null">
+            limit #{params.condition.limit}
+        </if>
+        <if test="params.condition.offset != null">
+            offset #{params.condition.offset}
+        </if>
     </sql>
 
     <!-- 插入记录 -->
