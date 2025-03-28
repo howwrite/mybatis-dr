@@ -22,6 +22,9 @@
                     </choose>
                 </foreach>
             </if>
+            <if test="params.logicDelete != null and params.logicDelete">
+                and deleted = 0
+            </if>
         </where>
     </sql>
 
@@ -76,6 +79,16 @@
         DELETE FROM ${params.tableName}
         <include refid="queryCondition"/>
     </delete>
+
+    <!-- 逻辑删除 -->
+    <update id="logicDelete" parameterType="map">
+        UPDATE ${params.tableName}
+        <set>
+            deleted = id,
+            deleted_time = now()
+        </set>
+        <include refid="queryCondition"/>
+    </update>
 
 
     <!-- 根据条件查询记录 -->

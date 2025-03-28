@@ -53,7 +53,10 @@ public class EntityHelper {
             // 解析表名
             DrTable drTable = entityClass.getAnnotation(DrTable.class);
             tableInfo.setTableName(drTable.value());
-            tableInfo.setFeatureFiledName(drTable.featureFiledName());
+            tableInfo.setFeatureColumnName(drTable.featureFiledName());
+            tableInfo.setLogicDelete(drTable.logicDelete());
+            tableInfo.setCreatedTimeColumnName(drTable.createdTimeColumnName());
+            tableInfo.setUpdatedTimeColumnName(drTable.updatedTimeColumnName());
 
             // 解析字段
             Map<String, Field> fieldMap = new HashMap<>();
@@ -93,9 +96,10 @@ public class EntityHelper {
      *
      * @param entity    实体对象
      * @param tableInfo 表信息
+     * @param create 是否是创建
      * @return 字段值Map
      */
-    public static Map<String, Object> parseEntity(Object entity, TableInfo<?> tableInfo) {
+    public static Map<String, Object> parseEntity(Object entity, TableInfo<?> tableInfo, boolean create) {
         if (entity == null) {
             return new HashMap<>();
         }
@@ -132,10 +136,13 @@ public class EntityHelper {
 
         // 添加feature字段
         if (!featureMap.isEmpty()) {
-            result.put(tableInfo.getFeatureFiledName(), JSON.toJSONString(featureMap));
+            result.put(tableInfo.getFeatureColumnName(), JSON.toJSONString(featureMap));
         }
-        result.put("created_time", LocalDateTime.now());
-        result.put("updated_time", LocalDateTime.now());
+
+        result.put(tableInfo.getUpdatedTimeColumnName(), LocalDateTime.now());
+        if (create) {
+            result.put(tableInfo.getCreatedTimeColumnName(), LocalDateTime.now());
+        }
         return result;
     }
 
@@ -146,30 +153,14 @@ public class EntityHelper {
      * @param tableInfo 表信息
      * @return 字段值Map列表
      */
-    public static List<Map<String, Object>> parseEntities(List<?> entities, TableInfo<?> tableInfo) {
+    public static List<Map<String, Object>> parseEntities(List<?> entities, TableInfo<?> tableInfo, boolean create) {
         List<Map<String, Object>> result = new ArrayList<>();
         if (entities != null && !entities.isEmpty()) {
             for (Object entity : entities) {
-                result.add(parseEntity(entity, tableInfo));
+                result.add(parseEntity(entity, tableInfo, create));
             }
         }
         return result;
-    }
-
-    /**
-     * 首字母大写
-     *
-     * @param str 字符串
-     * @return 首字母大写的字符串
-     */
-    private static String capitalize(String str) {
-        if (str == null || str.isEmpty()) {
-            return str;
-        }
-        if (str.length() == 1) {
-            return str.toUpperCase();
-        }
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
     public static <T> T convertToEntity(Map<String, Object> map, TableInfo<T> tableInfo) {
@@ -192,7 +183,7 @@ public class EntityHelper {
             }
 
             // 处理JSON字段
-            String featureJson = (String) map.get(tableInfo.getFeatureFiledName());
+            String featureJson = (String) map.get(tableInfo.getFeatureColumnName());
             if (featureJson != null) {
                 Map<String, Object> jsonFields = JSON.parseObject(featureJson);
                 for (Field jsonField : tableInfo.getJsonFields()) {

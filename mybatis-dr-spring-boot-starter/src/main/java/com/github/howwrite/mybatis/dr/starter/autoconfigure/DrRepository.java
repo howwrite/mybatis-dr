@@ -40,7 +40,7 @@ public class DrRepository {
         TableInfo<?> tableInfo = getTableInfo(entity.getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
-        params.put("entity", EntityHelper.parseEntity(entity, tableInfo));
+        params.put("entity", EntityHelper.parseEntity(entity, tableInfo, true));
         return dynamicSqlMapper.insert(params);
     }
 
@@ -53,7 +53,7 @@ public class DrRepository {
         TableInfo<?> tableInfo = getTableInfo(entities.getFirst().getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
-        params.put("entities", EntityHelper.parseEntities(entities, tableInfo));
+        params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
         return dynamicSqlMapper.batchInsert(params);
     }
 
@@ -62,8 +62,9 @@ public class DrRepository {
         TableInfo<?> tableInfo = getTableInfo(entity.getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
-        params.put("entity", EntityHelper.parseEntity(entity, tableInfo));
+        params.put("entity", EntityHelper.parseEntity(entity, tableInfo, false));
         params.put("condition", condition);
+        params.put("logicDelete", tableInfo.getLogicDelete());
         return dynamicSqlMapper.update(params);
     }
 
@@ -73,6 +74,10 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
+        params.put("logicDelete", tableInfo.getLogicDelete());
+        if (Boolean.TRUE.equals(tableInfo.getLogicDelete())) {
+            return dynamicSqlMapper.logicDelete(params);
+        }
         return dynamicSqlMapper.delete(params);
     }
 
@@ -82,6 +87,7 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
+        params.put("logicDelete", tableInfo.getLogicDelete());
         return dynamicSqlMapper.findByCondition(params)
                 .stream().map(it -> EntityHelper.convertToEntity(it, tableInfo)).collect(Collectors.toList());
     }
@@ -92,6 +98,7 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
+        params.put("logicDelete", tableInfo.getLogicDelete());
         return dynamicSqlMapper.count(params);
     }
 }

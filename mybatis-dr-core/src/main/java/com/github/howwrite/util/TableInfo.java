@@ -17,14 +17,30 @@ public class TableInfo<T> {
     private String tableName;
 
     /**
-     * feature字段名称
+     * feature字段数据库中的列名
      */
-    private String featureFiledName;
+    private String featureColumnName;
+
+    /**
+     * 创建时间字段数据库中的列名
+     * `created_time` datetime        not null default now() comment '创建时间'
+     */
+    private String createdTimeColumnName;
+    /**
+     * 更新时间字段数据库中的列名
+     *`updated_time` datetime        not null default now() on update current_timestamp comment '记录修改时间'
+     */
+    private String updatedTimeColumnName;
 
     /**
      * 实体类
      */
     private Class<T> entityClass;
+
+    /**
+     * 逻辑删除
+     */
+    private Boolean logicDelete;
 
     /**
      * 字段映射，key为数据库列名，value为Java的成员反射
@@ -44,12 +60,12 @@ public class TableInfo<T> {
         this.tableName = tableName;
     }
 
-    public String getFeatureFiledName() {
-        return featureFiledName;
+    public String getFeatureColumnName() {
+        return featureColumnName;
     }
 
-    public void setFeatureFiledName(String featureFiledName) {
-        this.featureFiledName = featureFiledName;
+    public void setFeatureColumnName(String featureColumnName) {
+        this.featureColumnName = featureColumnName;
     }
 
     public Class<T> getEntityClass() {
@@ -74,5 +90,29 @@ public class TableInfo<T> {
 
     public void setJsonFields(List<Field> jsonFields) {
         this.jsonFields = jsonFields;
+    }
+
+    public String getCreatedTimeColumnName() {
+        return createdTimeColumnName;
+    }
+
+    public void setCreatedTimeColumnName(String createdTimeColumnName) {
+        this.createdTimeColumnName = createdTimeColumnName;
+    }
+
+    public String getUpdatedTimeColumnName() {
+        return updatedTimeColumnName;
+    }
+
+    public void setUpdatedTimeColumnName(String updatedTimeColumnName) {
+        this.updatedTimeColumnName = updatedTimeColumnName;
+    }
+
+    public Boolean getLogicDelete() {
+        return logicDelete;
+    }
+
+    public void setLogicDelete(Boolean logicDelete) {
+        this.logicDelete = logicDelete;
     }
 }

@@ -48,6 +48,14 @@ public interface DynamicSqlMapper {
     int delete(@Param("params") Map<String, Object> params);
 
     /**
+     * 更新记录
+     *
+     * @param params 参数Map，包含表名、实体对象和主键
+     * @return 影响的行数
+     */
+    int logicDelete(@Param("params") Map<String, Object> params);
+
+    /**
      * 根据条件查询记录
      *
      * @param params 参数Map，包含表名和条件对象
