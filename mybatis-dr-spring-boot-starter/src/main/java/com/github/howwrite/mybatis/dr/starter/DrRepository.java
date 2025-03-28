@@ -1,32 +1,32 @@
-package com.github.howwrite.mybatis.dr.starter.autoconfigure;
+package com.github.howwrite.mybatis.dr.starter;
 
 import com.github.howwrite.mapper.DynamicSqlMapper;
 import com.github.howwrite.query.QueryCondition;
+import com.github.howwrite.treasure.spring.utils.SpringUtils;
 import com.github.howwrite.util.EntityHelper;
 import com.github.howwrite.util.TableInfo;
-import org.springframework.stereotype.Repository;
 
-import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-@Repository
 public class DrRepository {
 
     /**
      * 表信息
      */
-    private final Map<Class<?>, TableInfo<?>> tableInfoMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, TableInfo<?>> tableInfoMap = new ConcurrentHashMap<>();
+
     /**
      * 动态Mapper
      */
-    @Resource
-    private DynamicSqlMapper dynamicSqlMapper;
+    private static DynamicSqlMapper getDynamicSqlMapper() {
+        return SpringUtils.getBean(DynamicSqlMapper.class);
+    }
 
-    private TableInfo<?> getTableInfo(Class<?> entityClass) {
+    private static TableInfo<?> getTableInfo(Class<?> entityClass) {
         TableInfo<?> tableInfo = tableInfoMap.get(entityClass);
         if (tableInfo == null) {
             tableInfo = EntityHelper.getTableInfo(entityClass);
@@ -36,16 +36,16 @@ public class DrRepository {
     }
 
 
-    public int insert(Object entity) {
+    public static int insert(Object entity) {
         TableInfo<?> tableInfo = getTableInfo(entity.getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("entity", EntityHelper.parseEntity(entity, tableInfo, true));
-        return dynamicSqlMapper.insert(params);
+        return getDynamicSqlMapper().insert(params);
     }
 
 
-    public int batchInsert(List<Object> entities) {
+    public static int batchInsert(List<Object> entities) {
         if (entities == null || entities.isEmpty()) {
             return 0;
         }
@@ -54,51 +54,51 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
-        return dynamicSqlMapper.batchInsert(params);
+        return getDynamicSqlMapper().batchInsert(params);
     }
 
 
-    public int update(Object entity, QueryCondition condition) {
+    public static int update(Object entity, QueryCondition condition) {
         TableInfo<?> tableInfo = getTableInfo(entity.getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("entity", EntityHelper.parseEntity(entity, tableInfo, false));
         params.put("condition", condition);
         params.put("logicDelete", tableInfo.getLogicDelete());
-        return dynamicSqlMapper.update(params);
+        return getDynamicSqlMapper().update(params);
     }
 
 
-    public int delete(Class<?> clazz, QueryCondition condition) {
+    public static int delete(Class<?> clazz, QueryCondition condition) {
         TableInfo<?> tableInfo = getTableInfo(clazz);
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
         params.put("logicDelete", tableInfo.getLogicDelete());
         if (Boolean.TRUE.equals(tableInfo.getLogicDelete())) {
-            return dynamicSqlMapper.logicDelete(params);
+            return getDynamicSqlMapper().logicDelete(params);
         }
-        return dynamicSqlMapper.delete(params);
+        return getDynamicSqlMapper().delete(params);
     }
 
 
-    public <T> List<T> findByCondition(Class<T> clazz, QueryCondition condition) {
+    public static <T> List<T> findByCondition(Class<T> clazz, QueryCondition condition) {
         TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(clazz);
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
         params.put("logicDelete", tableInfo.getLogicDelete());
-        return dynamicSqlMapper.findByCondition(params)
+        return getDynamicSqlMapper().findByCondition(params)
                 .stream().map(it -> EntityHelper.convertToEntity(it, tableInfo)).collect(Collectors.toList());
     }
 
 
-    public long count(Class<?> clazz, QueryCondition condition) {
+    public static long count(Class<?> clazz, QueryCondition condition) {
         TableInfo<?> tableInfo = getTableInfo(clazz);
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
         params.put("logicDelete", tableInfo.getLogicDelete());
-        return dynamicSqlMapper.count(params);
+        return getDynamicSqlMapper().count(params);
     }
 }

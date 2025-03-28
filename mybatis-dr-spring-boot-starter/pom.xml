@@ -12,6 +12,9 @@
     <artifactId>mybatis-dr-spring-boot-starter</artifactId>
     <name>mybatis-dr-spring-boot-starter</name>
     <description>MyBatis Dynamic Repository Spring Boot Starter</description>
+    <properties>
+        <treasure.version>2.0-SNAPSHOT</treasure.version>
+    </properties>
 
     <dependencies>
         <!-- Core Module -->
@@ -43,6 +46,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.howwrite</groupId>
+            <artifactId>bag-spring</artifactId>
+            <version>${treasure.version}</version>
         </dependency>
     </dependencies>
 </project> 

@@ -1,2 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-    com.github.howwrite.mybatis.dr.starter.autoconfigure.MyBatisDynamicRepositoryAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.howwrite.mybatis.dr.starter.MyBatisDrConfiguration
