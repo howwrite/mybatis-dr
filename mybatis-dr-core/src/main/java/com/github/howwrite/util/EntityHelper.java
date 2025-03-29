@@ -108,6 +108,12 @@ public class EntityHelper {
         Map<String, Object> result = new HashMap<>();
         Map<String, Object> featureMap = new HashMap<>();
 
+        // 填充时间，支持自定义填充时间，如果没有自定义填充时间，那么会使用当前时间用于创建、更新时间
+        result.put(tableInfo.getUpdatedTimeColumnName(), LocalDateTime.now());
+        if (create) {
+            result.put(tableInfo.getCreatedTimeColumnName(), LocalDateTime.now());
+        }
+
         // 处理普通字段
         for (Map.Entry<String, Field> entry : tableInfo.getFieldMap().entrySet()) {
             String columnName = entry.getKey();
@@ -141,11 +147,6 @@ public class EntityHelper {
         // 添加feature字段
         if (!featureMap.isEmpty()) {
             result.put(tableInfo.getFeatureColumnName(), JSON.toJSONString(featureMap));
-        }
-
-        result.put(tableInfo.getUpdatedTimeColumnName(), LocalDateTime.now());
-        if (create) {
-            result.put(tableInfo.getCreatedTimeColumnName(), LocalDateTime.now());
         }
         return result;
     }
