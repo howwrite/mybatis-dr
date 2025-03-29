@@ -56,6 +56,25 @@
         </trim>
     </insert>
 
+    <!-- 插入记录 -->
+    <insert id="insertOrUpdate" parameterType="map">
+        INSERT INTO ${params.tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="params.entity" index="key" item="value">
+                ${key},
+            </foreach>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <foreach collection="params.entity" index="key" item="value">
+                #{value},
+            </foreach>
+        </trim>
+        ON DUPLICATE KEY UPDATE
+        <foreach collection="params.entity" index="key" item="value" separator=",">
+            ${key} = values(${key})
+        </foreach>
+    </insert>
+
     <!-- 批量插入记录 -->
     <insert id="batchInsert" parameterType="map">
         INSERT INTO ${params.tableName}
@@ -71,6 +90,27 @@
                     #{value},
                 </foreach>
             </trim>
+        </foreach>
+    </insert>
+    <!-- 批量插入记录 -->
+    <insert id="batchInsertOrUpdate" parameterType="map">
+        INSERT INTO ${params.tableName}
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="params.entities[0]" index="key" item="value">
+                ${key},
+            </foreach>
+        </trim>
+        VALUES
+        <foreach collection="params.entities" item="entity" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <foreach collection="entity" index="key" item="value">
+                    #{value},
+                </foreach>
+            </trim>
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        <foreach collection="params.entities[0]" index="key" item="value" separator=",">
+            ${key} = values(${key})
         </foreach>
     </insert>
 

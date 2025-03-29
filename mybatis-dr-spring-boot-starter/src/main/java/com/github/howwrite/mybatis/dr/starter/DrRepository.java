@@ -44,6 +44,14 @@ public class DrRepository {
         return getDynamicSqlMapper().insert(params);
     }
 
+    public static int insertOrUpdate(Object entity) {
+        TableInfo<?> tableInfo = getTableInfo(entity.getClass());
+        Map<String, Object> params = new HashMap<>();
+        params.put("tableName", tableInfo.getTableName());
+        params.put("entity", EntityHelper.parseEntity(entity, tableInfo, true));
+        return getDynamicSqlMapper().insertOrUpdate(params);
+    }
+
 
     public static int batchInsert(List<? extends Object> entities) {
         if (entities == null || entities.isEmpty()) {
@@ -55,6 +63,19 @@ public class DrRepository {
         params.put("tableName", tableInfo.getTableName());
         params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
         return getDynamicSqlMapper().batchInsert(params);
+    }
+
+
+    public static int batchInsertOrUpdate(List<? extends Object> entities) {
+        if (entities == null || entities.isEmpty()) {
+            return 0;
+        }
+
+        TableInfo<?> tableInfo = getTableInfo(entities.getFirst().getClass());
+        Map<String, Object> params = new HashMap<>();
+        params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
+        params.put("tableName", tableInfo.getTableName());
+        return getDynamicSqlMapper().batchInsertOrUpdate(params);
     }
 
 
