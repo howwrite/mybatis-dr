@@ -1,6 +1,6 @@
 package com.github.howwrite.processor;
 
-import com.github.howwrite.annotation.DrField;
+import com.github.howwrite.annotation.DrColumn;
 import com.github.howwrite.annotation.DrTable;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -48,10 +48,10 @@ public class QueryClassProcessor extends AbstractProcessor {
                     continue;
                 }
 
-                DrField drFieldAnnotation = field.getAnnotation(DrField.class);
-                if (drFieldAnnotation != null) {
+                DrColumn drColumnAnnotation = field.getAnnotation(DrColumn.class);
+                if (drColumnAnnotation != null) {
                     String fieldName = field.getSimpleName().toString();
-                    String columnName = drFieldAnnotation.value();
+                    String columnName = drColumnAnnotation.value();
 
                     String fieldType = field.asType().toString();
 

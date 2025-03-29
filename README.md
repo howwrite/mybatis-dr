@@ -26,8 +26,8 @@ MyBatis Dynamic Repository是一个基于MyBatis的增强框架，能够根据�
 ### 2. 定义实体类
 
 ```java
-import com.github.howwrite.annotation.DrField;
-import com.github.howwrite.annotation.DrFieldIgnore;
+import com.github.howwrite.annotation.DrColumn;
+import com.github.howwrite.annotation.DrColumnIgnore;
 import com.github.howwrite.annotation.DrTable;
 
 import java.util.Date;

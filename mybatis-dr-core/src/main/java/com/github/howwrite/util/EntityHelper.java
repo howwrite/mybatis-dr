@@ -1,9 +1,8 @@
 package com.github.howwrite.util;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.util.StringUtils;
-import com.github.howwrite.annotation.DrField;
-import com.github.howwrite.annotation.DrFieldIgnore;
+import com.github.howwrite.annotation.DrColumn;
+import com.github.howwrite.annotation.DrColumnIgnore;
 import com.github.howwrite.annotation.DrTable;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
@@ -64,21 +63,21 @@ public class EntityHelper {
             for (Field field : fields) {
                 // 跳过静态字段和被@FieldIgnore标记的字段
                 if (Modifier.isStatic(field.getModifiers())
-                        || field.isAnnotationPresent(DrFieldIgnore.class)) {
+                        || field.isAnnotationPresent(DrColumnIgnore.class)) {
                     continue;
                 }
 
                 // 访问权限
                 field.setAccessible(true);
 
-                DrField drFieldAnnotation = field.getAnnotation(DrField.class);
-                if (drFieldAnnotation != null && drFieldAnnotation.query()) {
+                DrColumn drColumnAnnotation = field.getAnnotation(DrColumn.class);
+                if (drColumnAnnotation != null && drColumnAnnotation.query()) {
                     // 有@Field注解且是query的字段
-                    String columnName = drFieldAnnotation.value();
+                    String columnName = drColumnAnnotation.value();
                     fieldMap.put(columnName, field);
                 } else {
                     // 否则是json中的字段
-                    String columnName = Optional.ofNullable(drFieldAnnotation).map(DrField::value).orElse(null);
+                    String columnName = Optional.ofNullable(drColumnAnnotation).map(DrColumn::value).orElse(null);
                     if (columnName == null || columnName.isBlank()) {
                         columnName = field.getName();
                     }
