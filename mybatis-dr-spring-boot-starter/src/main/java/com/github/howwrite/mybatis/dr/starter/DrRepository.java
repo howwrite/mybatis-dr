@@ -45,7 +45,7 @@ public class DrRepository {
     }
 
 
-    public static int batchInsert(List<Object> entities) {
+    public static int batchInsert(List<? extends Object> entities) {
         if (entities == null || entities.isEmpty()) {
             return 0;
         }
