@@ -114,6 +114,18 @@ public class DrRepository {
     }
 
 
+    public static <T> T findOne(QueryCondition<T> condition) {
+        TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(condition.currentEntityClass());
+        condition.setLimit(1);
+        Map<String, Object> params = new HashMap<>();
+        params.put("tableName", tableInfo.getTableName());
+        params.put("condition", condition);
+        params.put("logicDelete", tableInfo.getLogicDelete());
+        return getDynamicSqlMapper().findByCondition(params)
+                .stream().map(it -> EntityHelper.convertToEntity(it, tableInfo)).findFirst().orElse(null);
+    }
+
+
     public static long count(QueryCondition condition) {
         TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
