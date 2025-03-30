@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author mybatis-dr
  */
-public abstract class QueryCondition {
+public abstract class QueryCondition<T> {
 
     /**
      * 等于
@@ -84,7 +84,7 @@ public abstract class QueryCondition {
     /**
      * @return 当前实体类型
      */
-    public abstract Class<?> currentEntityClass();
+    public abstract Class<T> currentEntityClass();
 
     public void setPageInfo(int pageNo, int pageSize) {
         offset = (pageNo - 1) * pageSize;

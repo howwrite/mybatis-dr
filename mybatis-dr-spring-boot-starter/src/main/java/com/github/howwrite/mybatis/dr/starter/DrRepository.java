@@ -103,7 +103,7 @@ public class DrRepository {
     }
 
 
-    public static <T> List<T> findByCondition(QueryCondition condition) {
+    public static <T> List<T> findByCondition(QueryCondition<T> condition) {
         TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
