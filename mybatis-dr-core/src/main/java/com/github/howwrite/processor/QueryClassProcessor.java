@@ -101,6 +101,15 @@ public class QueryClassProcessor extends AbstractProcessor {
             out.println("public class " + queryClassName + " extends QueryCondition {");
             out.println();
 
+            // currentEntityClass
+            out.println("    /**");
+            out.println("     * currentEntityClass");
+            out.println("     */");
+            out.println("    public Class<?> currentEntityClass(){");
+            out.println("        return " + packageName + "." + className + ".class;");
+            out.println("    }");
+            out.println();
+
             // 为每个字段生成查询方法
             for (FieldInfo field : queryableFields) {
                 generateFieldQueryMethods(out, queryClassName, field);

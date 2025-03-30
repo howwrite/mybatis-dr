@@ -53,7 +53,7 @@ public class DrRepository {
     }
 
 
-    public static int batchInsert(List<? extends Object> entities) {
+    public static int batchInsert(List<?> entities) {
         if (entities == null || entities.isEmpty()) {
             return 0;
         }
@@ -66,7 +66,7 @@ public class DrRepository {
     }
 
 
-    public static int batchInsertOrUpdate(List<? extends Object> entities) {
+    public static int batchInsertOrUpdate(List<?> entities) {
         if (entities == null || entities.isEmpty()) {
             return 0;
         }
@@ -90,8 +90,8 @@ public class DrRepository {
     }
 
 
-    public static int delete(Class<?> clazz, QueryCondition condition) {
-        TableInfo<?> tableInfo = getTableInfo(clazz);
+    public static int delete(QueryCondition condition) {
+        TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
@@ -103,8 +103,8 @@ public class DrRepository {
     }
 
 
-    public static <T> List<T> findByCondition(Class<T> clazz, QueryCondition condition) {
-        TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(clazz);
+    public static <T> List<T> findByCondition(QueryCondition condition) {
+        TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
@@ -114,8 +114,8 @@ public class DrRepository {
     }
 
 
-    public static long count(Class<?> clazz, QueryCondition condition) {
-        TableInfo<?> tableInfo = getTableInfo(clazz);
+    public static long count(QueryCondition condition) {
+        TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);

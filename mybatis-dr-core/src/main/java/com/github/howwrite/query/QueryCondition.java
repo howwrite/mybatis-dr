@@ -81,6 +81,11 @@ public abstract class QueryCondition {
 
     private Integer offset;
 
+    /**
+     * @return 当前实体类型
+     */
+    public abstract Class<?> currentEntityClass();
+
     public void setPageInfo(int pageNo, int pageSize) {
         offset = (pageNo - 1) * pageSize;
         limit = pageSize;
