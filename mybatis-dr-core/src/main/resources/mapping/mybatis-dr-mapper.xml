@@ -8,28 +8,28 @@
                 <foreach collection="params.condition.conditions" item="condition" separator=" AND ">
                     <choose>
                         <when test="condition.operator == 'IN' or condition.operator == 'NOT IN'">
-                            ${condition.field} ${condition.operator}
+                            `${condition.field}` ${condition.operator}
                             <foreach collection="condition.value" item="val" open="(" separator="," close=")">
                                 #{val}
                             </foreach>
                         </when>
                         <when test="condition.operator == 'IS NULL' or condition.operator == 'IS NOT NULL'">
-                            ${condition.field} ${condition.operator}
+                            `${condition.field}` ${condition.operator}
                         </when>
                         <otherwise>
-                            ${condition.field} ${condition.operator} #{condition.value}
+                            `${condition.field}` ${condition.operator} #{condition.value}
                         </otherwise>
                     </choose>
                 </foreach>
             </if>
             <if test="params.logicDelete != null and params.logicDelete">
-                and deleted = 0
+                and `deleted` = 0
             </if>
         </where>
 
         <if test="params.condition != null and params.condition.orders != null and params.condition.orders.size() > 0">
             <foreach collection="params.condition.orders" item="order" separator="," open="order by">
-                ${order.field} ${order.orderMode}
+                `${order.field}` ${order.orderMode}
             </foreach>
         </if>
 
@@ -43,10 +43,10 @@
 
     <!-- 插入记录 -->
     <insert id="insert" parameterType="map">
-        INSERT INTO ${params.tableName}
+        INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <foreach collection="params.entity" index="key" item="value">
-                ${key},
+                `${key}`,
             </foreach>
         </trim>
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
@@ -58,10 +58,10 @@
 
     <!-- 插入记录 -->
     <insert id="insertOrUpdate" parameterType="map">
-        INSERT INTO ${params.tableName}
+        INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <foreach collection="params.entity" index="key" item="value">
-                ${key},
+                `${key}`,
             </foreach>
         </trim>
         <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
@@ -71,16 +71,16 @@
         </trim>
         ON DUPLICATE KEY UPDATE
         <foreach collection="params.entity" index="key" item="value" separator=",">
-            ${key} = values(${key})
+            `${key}` = values(`${key}`)
         </foreach>
     </insert>
 
     <!-- 批量插入记录 -->
     <insert id="batchInsert" parameterType="map">
-        INSERT INTO ${params.tableName}
+        INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <foreach collection="params.entities[0]" index="key" item="value">
-                ${key},
+                `${key}`,
             </foreach>
         </trim>
         VALUES
@@ -94,10 +94,10 @@
     </insert>
     <!-- 批量插入记录 -->
     <insert id="batchInsertOrUpdate" parameterType="map">
-        INSERT INTO ${params.tableName}
+        INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <foreach collection="params.entities[0]" index="key" item="value">
-                ${key},
+                `${key}`,
             </foreach>
         </trim>
         VALUES
@@ -110,17 +110,17 @@
         </foreach>
         ON DUPLICATE KEY UPDATE
         <foreach collection="params.entities[0]" index="key" item="value" separator=",">
-            ${key} = values(${key})
+            `${key}` = values(`${key}`)
         </foreach>
     </insert>
 
     <!-- 更新记录 -->
     <update id="update" parameterType="map">
-        UPDATE ${params.tableName}
+        UPDATE `${params.tableName}`
         <set>
             <foreach collection="params.entity" index="key" item="value" separator=",">
                 <if test="key != params.primaryKey">
-                    ${key} = #{value}
+                    `${key}` = #{value}
                 </if>
             </foreach>
         </set>
@@ -129,16 +129,16 @@
 
     <!-- 根据条件删除记录 -->
     <delete id="delete" parameterType="map">
-        DELETE FROM ${params.tableName}
+        DELETE FROM `${params.tableName}`
         <include refid="queryCondition"/>
     </delete>
 
     <!-- 逻辑删除 -->
     <update id="logicDelete" parameterType="map">
-        UPDATE ${params.tableName}
+        UPDATE `${params.tableName}`
         <set>
-            deleted = id,
-            deleted_time = now()
+            `deleted` = id,
+            `deleted_time` = now()
         </set>
         <include refid="queryCondition"/>
     </update>
@@ -146,14 +146,14 @@
 
     <!-- 根据条件查询记录 -->
     <select id="findByCondition" parameterType="map" resultType="map">
-        SELECT * FROM ${params.tableName}
+        SELECT * FROM `${params.tableName}`
         <include refid="queryCondition"/>
     </select>
 
 
     <!-- 根据条件查询记录数 -->
     <select id="count" parameterType="map" resultType="long">
-        SELECT COUNT(*) FROM ${params.tableName}
+        SELECT COUNT(*) FROM `${params.tableName}`
         <include refid="queryCondition"/>
     </select>
 </mapper> 
