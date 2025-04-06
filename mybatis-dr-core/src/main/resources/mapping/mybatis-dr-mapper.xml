@@ -69,10 +69,12 @@
                 #{value},
             </foreach>
         </trim>
-        ON DUPLICATE KEY UPDATE
-        <foreach collection="params.entity" index="key" item="value" separator=",">
-            `${key}` = values(`${key}`)
-        </foreach>
+        <if test="params.whenDuplicateUpdateFields != null and params.whenDuplicateUpdateFields.size() > 0">
+            ON DUPLICATE KEY UPDATE
+            <foreach collection="params.whenDuplicateUpdateFields" index="key" item="item" separator=",">
+                `${item}` = values(`${item}`)
+            </foreach>
+        </if>
     </insert>
 
     <!-- 批量插入记录 -->
@@ -108,10 +110,12 @@
                 </foreach>
             </trim>
         </foreach>
-        ON DUPLICATE KEY UPDATE
-        <foreach collection="params.entities[0]" index="key" item="value" separator=",">
-            `${key}` = values(`${key}`)
-        </foreach>
+        <if test="params.whenDuplicateUpdateFields != null and params.whenDuplicateUpdateFields.size() > 0">
+            ON DUPLICATE KEY UPDATE
+            <foreach collection="params.whenDuplicateUpdateFields" index="key" item="item" separator=",">
+                `${item}` = values(`${item}`)
+            </foreach>
+        </if>
     </insert>
 
     <!-- 更新记录 -->

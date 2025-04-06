@@ -49,6 +49,7 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("entity", EntityHelper.parseEntity(entity, tableInfo, true));
+        params.put("whenDuplicateUpdateFields", tableInfo.getWhenDuplicateUpdateFields());
         return getDynamicSqlMapper().insertOrUpdate(params);
     }
 
@@ -75,6 +76,7 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
         params.put("tableName", tableInfo.getTableName());
+        params.put("whenDuplicateUpdateFields", tableInfo.getWhenDuplicateUpdateFields());
         return getDynamicSqlMapper().batchInsertOrUpdate(params);
     }
 

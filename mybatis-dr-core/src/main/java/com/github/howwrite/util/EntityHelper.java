@@ -58,6 +58,7 @@ public class EntityHelper {
             // 解析字段
             Map<String, Field> fieldMap = new HashMap<>();
             Map<String, Field> jsonFields = new HashMap<>();
+            List<String> whenDuplicateUpdateFields = new ArrayList<>();
 
             Field[] fields = entityClass.getDeclaredFields();
             for (Field field : fields) {
@@ -75,6 +76,13 @@ public class EntityHelper {
                     // 有@Field注解且是query的字段
                     String columnName = drColumnAnnotation.value();
                     fieldMap.put(columnName, field);
+
+                    // 冲突需要更新的字段处理 createTime字段看Table配置，非createdTime看字段配置
+                    if ((drTable.createdTimeColumnName().equals(columnName) && drTable.whenDuplicateUpdateCreatedTime())
+                            || (!drTable.createdTimeColumnName().equals(columnName) && drColumnAnnotation.whenDuplicateUpdate())
+                    ) {
+                        whenDuplicateUpdateFields.add(columnName);
+                    }
                 } else {
                     // 否则是json中的字段
                     String columnName = Optional.ofNullable(drColumnAnnotation).map(DrColumn::value).orElse(null);
@@ -86,7 +94,8 @@ public class EntityHelper {
             }
 
             tableInfo.setFieldMap(fieldMap);
-            tableInfo.setJsonFields(jsonFields);
+            tableInfo.setJsonFieldMap(jsonFields);
+            tableInfo.setWhenDuplicateUpdateFields(whenDuplicateUpdateFields);
             TABLE_INFO_CACHE.put(entityClass, tableInfo);
             return tableInfo;
         }
@@ -97,7 +106,7 @@ public class EntityHelper {
      *
      * @param entity    实体对象
      * @param tableInfo 表信息
-     * @param create 是否是创建
+     * @param create    是否是创建
      * @return 字段值Map
      */
     public static Map<String, Object> parseEntity(Object entity, TableInfo<?> tableInfo, boolean create) {
@@ -130,7 +139,7 @@ public class EntityHelper {
         }
 
         // 处理json字段
-        for (Map.Entry<String, Field> entry : tableInfo.getJsonFields().entrySet()) {
+        for (Map.Entry<String, Field> entry : tableInfo.getJsonFieldMap().entrySet()) {
             String columnName = entry.getKey();
             Field field = entry.getValue();
 
@@ -191,7 +200,7 @@ public class EntityHelper {
             String featureJson = (String) map.get(tableInfo.getFeatureColumnName());
             if (featureJson != null && !featureJson.isBlank()) {
                 Map<String, Object> jsonFields = JSON.parseObject(featureJson);
-                for (Map.Entry<String, Field> entry : tableInfo.getJsonFields().entrySet()) {
+                for (Map.Entry<String, Field> entry : tableInfo.getJsonFieldMap().entrySet()) {
                     String columnName = entry.getKey();
                     Field field = entry.getValue();
                     Object value = jsonFields.get(columnName);

@@ -28,7 +28,7 @@ public class TableInfo<T> {
     private String createdTimeColumnName;
     /**
      * 更新时间字段数据库中的列名
-     *`updated_time` datetime        not null default now() on update current_timestamp comment '记录修改时间'
+     * `updated_time` datetime        not null default now() on update current_timestamp comment '记录修改时间'
      */
     private String updatedTimeColumnName;
 
@@ -50,7 +50,20 @@ public class TableInfo<T> {
     /**
      * JSON字段列表，这些字段将被合并到feature字段中
      */
-    private Map<String, Field> jsonFields;
+    private Map<String, Field> jsonFieldMap;
+
+    /**
+     * 冲突时需要更新的字段名称
+     */
+    private List<String> whenDuplicateUpdateFields;
+
+    public List<String> getWhenDuplicateUpdateFields() {
+        return whenDuplicateUpdateFields;
+    }
+
+    public void setWhenDuplicateUpdateFields(List<String> whenDuplicateUpdateFields) {
+        this.whenDuplicateUpdateFields = whenDuplicateUpdateFields;
+    }
 
     public String getTableName() {
         return tableName;
@@ -84,12 +97,12 @@ public class TableInfo<T> {
         this.fieldMap = fieldMap;
     }
 
-    public Map<String, Field> getJsonFields() {
-        return jsonFields;
+    public Map<String, Field> getJsonFieldMap() {
+        return jsonFieldMap;
     }
 
-    public void setJsonFields(Map<String, Field> jsonFields) {
-        this.jsonFields = jsonFields;
+    public void setJsonFieldMap(Map<String, Field> jsonFieldMap) {
+        this.jsonFieldMap = jsonFieldMap;
     }
 
     public String getCreatedTimeColumnName() {
