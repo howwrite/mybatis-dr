@@ -32,7 +32,8 @@
                 `${order.field}` ${order.orderMode}
             </foreach>
         </if>
-
+    </sql>
+    <sql id="limitAndOffset">
         <if test="params.condition.limit != null">
             limit #{params.condition.limit}
         </if>
@@ -129,12 +130,14 @@
             </foreach>
         </set>
         <include refid="queryCondition"/>
+        <include refid="limitAndOffset"/>
     </update>
 
     <!-- 根据条件删除记录 -->
     <delete id="delete" parameterType="map">
         DELETE FROM `${params.tableName}`
         <include refid="queryCondition"/>
+        <include refid="limitAndOffset"/>
     </delete>
 
     <!-- 逻辑删除 -->
@@ -145,6 +148,7 @@
             `deleted_time` = now()
         </set>
         <include refid="queryCondition"/>
+        <include refid="limitAndOffset"/>
     </update>
 
 
@@ -152,6 +156,7 @@
     <select id="findByCondition" parameterType="map" resultType="map">
         SELECT * FROM `${params.tableName}`
         <include refid="queryCondition"/>
+        <include refid="limitAndOffset"/>
     </select>
 
 
