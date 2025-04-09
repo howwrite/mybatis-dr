@@ -86,9 +86,10 @@ public abstract class QueryCondition<T> {
      */
     public abstract Class<T> currentEntityClass();
 
-    public void setPageInfo(int pageNo, int pageSize) {
+    public QueryCondition<T> setPageInfo(int pageNo, int pageSize) {
         offset = (pageNo - 1) * pageSize;
         limit = pageSize;
+        return this;
     }
 
     /**
@@ -99,7 +100,7 @@ public abstract class QueryCondition<T> {
      * @param value    值
      * @return 当前对象
      */
-    public QueryCondition addCondition(String field, String operator, Object value) {
+    public QueryCondition<T> addCondition(String field, String operator, Object value) {
         conditions.add(new Condition(field, operator, value));
         return this;
     }
@@ -111,7 +112,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition eq(String field, Object value) {
+    public QueryCondition<T> eq(String field, Object value) {
         return addCondition(field, OPERATOR_EQ, value);
     }
 
@@ -122,7 +123,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition ne(String field, Object value) {
+    public QueryCondition<T> ne(String field, Object value) {
         return addCondition(field, OPERATOR_NE, value);
     }
 
@@ -133,7 +134,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition gt(String field, Object value) {
+    public QueryCondition<T> gt(String field, Object value) {
         return addCondition(field, OPERATOR_GT, value);
     }
 
@@ -144,7 +145,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition ge(String field, Object value) {
+    public QueryCondition<T> ge(String field, Object value) {
         return addCondition(field, OPERATOR_GE, value);
     }
 
@@ -155,7 +156,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition lt(String field, Object value) {
+    public QueryCondition<T> lt(String field, Object value) {
         return addCondition(field, OPERATOR_LT, value);
     }
 
@@ -166,7 +167,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition le(String field, Object value) {
+    public QueryCondition<T> le(String field, Object value) {
         return addCondition(field, OPERATOR_LE, value);
     }
 
@@ -177,7 +178,7 @@ public abstract class QueryCondition<T> {
      * @param values 值集合
      * @return 当前对象
      */
-    public QueryCondition in(String field, Collection<?> values) {
+    public QueryCondition<T> in(String field, Collection<?> values) {
         return addCondition(field, OPERATOR_IN, values);
     }
 
@@ -188,7 +189,7 @@ public abstract class QueryCondition<T> {
      * @param values 值集合
      * @return 当前对象
      */
-    public QueryCondition notIn(String field, Collection<?> values) {
+    public QueryCondition<T> notIn(String field, Collection<?> values) {
         return addCondition(field, OPERATOR_NOT_IN, values);
     }
 
@@ -199,7 +200,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition like(String field, String value) {
+    public QueryCondition<T> like(String field, String value) {
         return addCondition(field, OPERATOR_LIKE, "%" + value + "%");
     }
 
@@ -210,7 +211,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition likeLeft(String field, String value) {
+    public QueryCondition<T> likeLeft(String field, String value) {
         return addCondition(field, OPERATOR_LIKE, "%" + value);
     }
 
@@ -221,7 +222,7 @@ public abstract class QueryCondition<T> {
      * @param value 值
      * @return 当前对象
      */
-    public QueryCondition likeRight(String field, String value) {
+    public QueryCondition<T> likeRight(String field, String value) {
         return addCondition(field, OPERATOR_LIKE, value + "%");
     }
 
@@ -231,7 +232,7 @@ public abstract class QueryCondition<T> {
      * @param field 字段名
      * @return 当前对象
      */
-    public QueryCondition isNull(String field) {
+    public QueryCondition<T> isNull(String field) {
         return addCondition(field, OPERATOR_IS_NULL, null);
     }
 
@@ -241,21 +242,21 @@ public abstract class QueryCondition<T> {
      * @param field 字段名
      * @return 当前对象
      */
-    public QueryCondition isNotNull(String field) {
+    public QueryCondition<T> isNotNull(String field) {
         return addCondition(field, OPERATOR_IS_NOT_NULL, null);
     }
 
-    public QueryCondition addOrder(String field, String orderMode) {
+    public QueryCondition<T> addOrder(String field, String orderMode) {
         orders.add(new Order(field, orderMode));
         return this;
     }
 
-    public QueryCondition desc(String field) {
+    public QueryCondition<T> desc(String field) {
         return addOrder(field, "desc");
     }
 
 
-    public QueryCondition asc(String field) {
+    public QueryCondition<T> asc(String field) {
         return addOrder(field, "asc");
     }
 
