@@ -1,14 +1,14 @@
 package com.github.howwrite.util;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import com.github.howwrite.annotation.DrColumn;
 import com.github.howwrite.annotation.DrColumnIgnore;
 import com.github.howwrite.annotation.DrTable;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,6 +27,8 @@ public class EntityHelper {
      * 表信息缓存，key为实体类，value为表信息
      */
     private static final Map<Class<?>, TableInfo<?>> TABLE_INFO_CACHE = new ConcurrentHashMap<>();
+
+    private static final Map<Type, Type> parameterizedTypeMap = new ConcurrentHashMap<>();
 
     /**
      * 获取表信息
@@ -218,9 +220,9 @@ public class EntityHelper {
     }
 
     public static void assignField(Field field, Object target, Object value) throws IllegalAccessException {
-        Class<?> fieldType = field.getType();
+        Type fieldType = field.getGenericType();
 
-        if (fieldType.isInstance(value)) {
+        if (isTypeCompatible(field, value)) {
             field.set(target, value);
             return;
         }
@@ -231,7 +233,7 @@ public class EntityHelper {
         }
     }
 
-    private static Object convertPrimitive(Class<?> fieldType, Object value) {
+    private static Object convertPrimitive(Type fieldType, Object value) {
         if (value == null) {
             return null;
         }
@@ -255,7 +257,94 @@ public class EntityHelper {
             return new BigDecimal(value.toString());
         } else {
             String jsonStr = JSON.toJSONString(value);
-            return JSON.parseObject(jsonStr, fieldType);
+            return deserializeJson(jsonStr, fieldType);
+        }
+    }
+
+    // 检查 Field 对象的类型和对象的类型是否兼容
+    public static boolean isTypeCompatible(Field field, Object obj) {
+        if (obj == null) {
+            return true; // 空对象被认为与任何类型兼容
+        }
+
+        // 获取 Field 的类型
+        Type fieldType = field.getGenericType();
+        Class<?> fieldRawType;
+        if (fieldType instanceof ParameterizedType) {
+            fieldRawType = (Class<?>) ((ParameterizedType) fieldType).getRawType();
+        } else {
+            fieldRawType = field.getType();
+        }
+
+        // 检查对象的类型是否是 Field 原始类型的子类
+        if (!fieldRawType.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        // 如果 Field 类型是泛型类型
+        if (fieldType instanceof ParameterizedType parameterizedFieldType) {
+            Type[] fieldTypeArguments = parameterizedFieldType.getActualTypeArguments();
+
+            // 如果对象也是泛型类型
+            if (obj.getClass().getGenericSuperclass() instanceof ParameterizedType parameterizedObjType) {
+                Type[] objTypeArguments = parameterizedObjType.getActualTypeArguments();
+
+                // 检查泛型类型参数是否兼容
+                if (fieldTypeArguments.length != objTypeArguments.length) {
+                    return false;
+                }
+                for (int i = 0; i < fieldTypeArguments.length; i++) {
+                    if (!fieldTypeArguments[i].equals(objTypeArguments[i])) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+
+    private static Object deserializeJson(String json, Type type) {
+        if (type instanceof ParameterizedType parameterizedType) {
+            try {
+                return JSON.parseObject(json, getParameterizedType(parameterizedType));
+            } catch (Exception e) {
+                LOGGER.error("获取json泛型失败", e);
+            }
+        }
+        return JSON.parseObject(json, type);
+    }
+
+    private static Type getParameterizedType(ParameterizedType parameterizedType) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Type existType = parameterizedTypeMap.get(parameterizedType);
+        if (existType != null) {
+            return existType;
+        }
+        synchronized (parameterizedType) {
+            Type existType1 = parameterizedTypeMap.get(parameterizedType);
+            if (existType1 != null) {
+                return existType1;
+            }
+
+            Type[] typeArguments = parameterizedType.getActualTypeArguments();
+            StringBuilder typeReferenceString = new StringBuilder();
+            typeReferenceString.append("new TypeReference<");
+            typeReferenceString.append(((Class<?>) parameterizedType.getRawType()).getSimpleName());
+            typeReferenceString.append("<");
+            for (int i = 0; i < typeArguments.length; i++) {
+                if (i > 0) {
+                    typeReferenceString.append(",");
+                }
+                typeReferenceString.append(((Class<?>) typeArguments[i]).getSimpleName());
+            }
+            typeReferenceString.append(">>(){}.getType()");
+            TypeReference<?> typeReference =
+                    (TypeReference<?>) TypeReference.class.getMethod("getType").getDeclaringClass().getClassLoader()
+                            .loadClass("com.alibaba.fastjson2.TypeReference$" + typeReferenceString.toString().replaceAll("[<>(),]", "_")).getDeclaredConstructor().newInstance();
+            Type newType = typeReference.getType();
+            parameterizedTypeMap.put(parameterizedType, newType);
+            return newType;
         }
     }
 }
