@@ -1,14 +1,16 @@
 package com.github.howwrite.util;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.TypeReference;
 import com.github.howwrite.annotation.DrColumn;
 import com.github.howwrite.annotation.DrColumnIgnore;
 import com.github.howwrite.annotation.DrTable;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -28,7 +30,6 @@ public class EntityHelper {
      */
     private static final Map<Class<?>, TableInfo<?>> TABLE_INFO_CACHE = new ConcurrentHashMap<>();
 
-    private static final Map<Type, Type> parameterizedTypeMap = new ConcurrentHashMap<>();
 
     /**
      * 获取表信息
@@ -257,7 +258,7 @@ public class EntityHelper {
             return new BigDecimal(value.toString());
         } else {
             String jsonStr = JSON.toJSONString(value);
-            return deserializeJson(jsonStr, fieldType);
+            return JSON.parseObject(jsonStr, fieldType);
         }
     }
 
@@ -302,49 +303,5 @@ public class EntityHelper {
         }
 
         return true;
-    }
-
-
-    private static Object deserializeJson(String json, Type type) {
-        if (type instanceof ParameterizedType parameterizedType) {
-            try {
-                return JSON.parseObject(json, getParameterizedType(parameterizedType));
-            } catch (Exception e) {
-                LOGGER.error("获取json泛型失败", e);
-            }
-        }
-        return JSON.parseObject(json, type);
-    }
-
-    private static Type getParameterizedType(ParameterizedType parameterizedType) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        Type existType = parameterizedTypeMap.get(parameterizedType);
-        if (existType != null) {
-            return existType;
-        }
-        synchronized (parameterizedType) {
-            Type existType1 = parameterizedTypeMap.get(parameterizedType);
-            if (existType1 != null) {
-                return existType1;
-            }
-
-            Type[] typeArguments = parameterizedType.getActualTypeArguments();
-            StringBuilder typeReferenceString = new StringBuilder();
-            typeReferenceString.append("new TypeReference<");
-            typeReferenceString.append(((Class<?>) parameterizedType.getRawType()).getSimpleName());
-            typeReferenceString.append("<");
-            for (int i = 0; i < typeArguments.length; i++) {
-                if (i > 0) {
-                    typeReferenceString.append(",");
-                }
-                typeReferenceString.append(((Class<?>) typeArguments[i]).getSimpleName());
-            }
-            typeReferenceString.append(">>(){}.getType()");
-            TypeReference<?> typeReference =
-                    (TypeReference<?>) TypeReference.class.getMethod("getType").getDeclaringClass().getClassLoader()
-                            .loadClass("com.alibaba.fastjson2.TypeReference$" + typeReferenceString.toString().replaceAll("[<>(),]", "_")).getDeclaredConstructor().newInstance();
-            Type newType = typeReference.getType();
-            parameterizedTypeMap.put(parameterizedType, newType);
-            return newType;
-        }
     }
 }
