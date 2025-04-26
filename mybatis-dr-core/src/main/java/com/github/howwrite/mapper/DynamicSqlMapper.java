@@ -37,7 +37,7 @@ public interface DynamicSqlMapper {
      * @param params 参数Map，包含表名和实体对象列表
      * @return 影响的行数
      */
-    int batchInsert(@Param("params") Map<String, Object> params);
+    int batchInsert(@Param("params") Map<String, Object> params, @Param("entities") List<Map<String, Object>> entities);
 
     /**
      * 批量 insert or update
@@ -45,7 +45,7 @@ public interface DynamicSqlMapper {
      * @param params 参数Map，包含表名和实体对象列表
      * @return 影响的行数
      */
-    int batchInsertOrUpdate(@Param("params") Map<String, Object> params);
+    int batchInsertOrUpdate(@Param("params") Map<String, Object> params, @Param("entities") List<Map<String, Object>> entities);
 
     /**
      * 更新记录

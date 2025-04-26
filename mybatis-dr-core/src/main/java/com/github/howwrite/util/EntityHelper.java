@@ -53,15 +53,17 @@ public class EntityHelper {
             // 解析表名
             DrTable drTable = entityClass.getAnnotation(DrTable.class);
             tableInfo.setTableName(drTable.value());
-            tableInfo.setFeatureColumnName(drTable.featureFiledName());
+            tableInfo.setFeatureColumnName(drTable.featureColumnName());
             tableInfo.setLogicDelete(drTable.logicDelete());
             tableInfo.setCreatedTimeColumnName(drTable.createdTimeColumnName());
             tableInfo.setUpdatedTimeColumnName(drTable.updatedTimeColumnName());
+            tableInfo.setIdColumnName(drTable.idColumnName());
 
             // 解析字段
             Map<String, Field> fieldMap = new HashMap<>();
             Map<String, Field> jsonFields = new HashMap<>();
-            List<String> whenDuplicateUpdateFields = new ArrayList<>();
+            Field idField = null;
+            Set<String> whenDuplicateUpdateFields = new HashSet<>();
 
             Field[] fields = entityClass.getDeclaredFields();
             for (Field field : fields) {
@@ -79,6 +81,11 @@ public class EntityHelper {
                     // 有@Field注解且是query的字段
                     String columnName = drColumnAnnotation.value();
                     fieldMap.put(columnName, field);
+
+                    if (drTable.idColumnName().equals(columnName)) {
+                        idField = field;
+                        whenDuplicateUpdateFields.add(columnName);
+                    }
 
                     // 冲突需要更新的字段处理 createTime字段看Table配置，非createdTime看字段配置
                     if ((drTable.createdTimeColumnName().equals(columnName) && drTable.whenDuplicateUpdateCreatedTime())
@@ -99,6 +106,7 @@ public class EntityHelper {
             tableInfo.setFieldMap(fieldMap);
             tableInfo.setJsonFieldMap(jsonFields);
             tableInfo.setWhenDuplicateUpdateFields(whenDuplicateUpdateFields);
+            tableInfo.setIdField(idField);
             TABLE_INFO_CACHE.put(entityClass, tableInfo);
             return tableInfo;
         }

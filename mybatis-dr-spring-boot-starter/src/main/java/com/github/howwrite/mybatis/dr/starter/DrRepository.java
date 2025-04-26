@@ -1,11 +1,13 @@
 package com.github.howwrite.mybatis.dr.starter;
 
+import com.github.howwrite.constant.MybatisDrContent;
 import com.github.howwrite.mapper.DynamicSqlMapper;
 import com.github.howwrite.query.QueryCondition;
 import com.github.howwrite.treasure.spring.utils.SpringUtils;
 import com.github.howwrite.util.EntityHelper;
 import com.github.howwrite.util.TableInfo;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +43,9 @@ public class DrRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("entity", EntityHelper.parseEntity(entity, tableInfo, true));
-        return getDynamicSqlMapper().insert(params);
+        int insertResult = getDynamicSqlMapper().insert(params);
+        writeAutoGenId(tableInfo, entity, params);
+        return insertResult;
     }
 
     public static int insertOrUpdate(Object entity) {
@@ -50,7 +54,9 @@ public class DrRepository {
         params.put("tableName", tableInfo.getTableName());
         params.put("entity", EntityHelper.parseEntity(entity, tableInfo, true));
         params.put("whenDuplicateUpdateFields", tableInfo.getWhenDuplicateUpdateFields());
-        return getDynamicSqlMapper().insertOrUpdate(params);
+        int insertResult = getDynamicSqlMapper().insertOrUpdate(params);
+        writeAutoGenId(tableInfo, entity, params);
+        return insertResult;
     }
 
 
@@ -62,8 +68,14 @@ public class DrRepository {
         TableInfo<?> tableInfo = getTableInfo(entities.getFirst().getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
-        params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
-        return getDynamicSqlMapper().batchInsert(params);
+        List<Map<String, Object>> entitiesParam = EntityHelper.parseEntities(entities, tableInfo, true);
+        int insertResult = getDynamicSqlMapper().batchInsert(params, entitiesParam);
+        for (int i = 0; i < entities.size(); i++) {
+            Object entity = entities.get(i);
+            Map<String, Object> entityParam = entitiesParam.get(i);
+            writeAutoGenId(tableInfo, entity, entityParam);
+        }
+        return insertResult;
     }
 
 
@@ -74,14 +86,14 @@ public class DrRepository {
 
         TableInfo<?> tableInfo = getTableInfo(entities.getFirst().getClass());
         Map<String, Object> params = new HashMap<>();
-        params.put("entities", EntityHelper.parseEntities(entities, tableInfo, true));
         params.put("tableName", tableInfo.getTableName());
         params.put("whenDuplicateUpdateFields", tableInfo.getWhenDuplicateUpdateFields());
-        return getDynamicSqlMapper().batchInsertOrUpdate(params);
+        List<Map<String, Object>> entitiesParam = EntityHelper.parseEntities(entities, tableInfo, true);
+        return getDynamicSqlMapper().batchInsertOrUpdate(params, entitiesParam);
     }
 
 
-    public static int update(Object entity, QueryCondition condition) {
+    public static int update(Object entity, QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(entity.getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
@@ -92,7 +104,7 @@ public class DrRepository {
     }
 
 
-    public static int delete(QueryCondition condition) {
+    public static int delete(QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
@@ -128,12 +140,28 @@ public class DrRepository {
     }
 
 
-    public static long count(QueryCondition condition) {
+    public static long count(QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
         params.put("logicDelete", tableInfo.getLogicDelete());
         return getDynamicSqlMapper().count(params);
+    }
+
+    private static void writeAutoGenId(TableInfo<?> tableInfo, Object entity, Map<String, Object> params) {
+        Field idField = tableInfo.getIdField();
+        if (idField == null) {
+            return;
+        }
+        Object genId = params.get(MybatisDrContent.AUTO_GEN_ID_FIELD_NAME);
+        if (genId == null) {
+            return;
+        }
+        try {
+            EntityHelper.assignField(idField, entity, genId);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

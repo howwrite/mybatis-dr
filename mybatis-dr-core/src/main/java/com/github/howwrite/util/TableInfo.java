@@ -1,8 +1,8 @@
 package com.github.howwrite.util;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 表信息类，存储实体类与表的映射信息
@@ -20,6 +20,10 @@ public class TableInfo<T> {
      * feature字段数据库中的列名
      */
     private String featureColumnName;
+    /**
+     * id字段数据库中的列名称
+     */
+    private String idColumnName;
 
     /**
      * 创建时间字段数据库中的列名
@@ -52,16 +56,18 @@ public class TableInfo<T> {
      */
     private Map<String, Field> jsonFieldMap;
 
+    private Field idField;
+
     /**
      * 冲突时需要更新的字段名称
      */
-    private List<String> whenDuplicateUpdateFields;
+    private Set<String> whenDuplicateUpdateFields;
 
-    public List<String> getWhenDuplicateUpdateFields() {
+    public Set<String> getWhenDuplicateUpdateFields() {
         return whenDuplicateUpdateFields;
     }
 
-    public void setWhenDuplicateUpdateFields(List<String> whenDuplicateUpdateFields) {
+    public void setWhenDuplicateUpdateFields(Set<String> whenDuplicateUpdateFields) {
         this.whenDuplicateUpdateFields = whenDuplicateUpdateFields;
     }
 
@@ -127,5 +133,21 @@ public class TableInfo<T> {
 
     public void setLogicDelete(Boolean logicDelete) {
         this.logicDelete = logicDelete;
+    }
+
+    public String getIdColumnName() {
+        return idColumnName;
+    }
+
+    public void setIdColumnName(String idColumnName) {
+        this.idColumnName = idColumnName;
+    }
+
+    public Field getIdField() {
+        return idField;
+    }
+
+    public void setIdField(Field idField) {
+        this.idField = idField;
     }
 }

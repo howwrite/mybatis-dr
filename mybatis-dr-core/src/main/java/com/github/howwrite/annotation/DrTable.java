@@ -20,12 +20,6 @@ public @interface DrTable {
     String value();
 
     /**
-     * @return 数据库中 feature字段名称
-     * `feature`      longtext        comment '特性'
-     */
-    String featureFiledName() default "feature";
-
-    /**
      * @return 是否逻辑删除
      * <p>
      * `deleted`      bigint unsigned not null default 0 comment '逻辑删除',
@@ -34,20 +28,31 @@ public @interface DrTable {
     boolean logicDelete() default false;
 
     /**
+     * 数据库中id字段名称
+     */
+    String idColumnName() default "id";
+
+    /**
+     * @return 数据库中 feature字段名称
+     * `feature`      longtext        comment '特性'
+     */
+    String featureColumnName() default "feature";
+
+    /**
      * 创建时间字段数据库中的列名
      * `created_time` datetime        not null default now() comment '创建时间'
      */
     String createdTimeColumnName() default "created_time";
 
     /**
-     * 唯一索引冲突时 创建时间是否更新
-     */
-    boolean whenDuplicateUpdateCreatedTime() default false;
-
-    /**
      * 更新时间字段数据库中的列名
      * `updated_time` datetime        not null default now() on update current_timestamp comment '记录修改时间'
      */
     String updatedTimeColumnName() default "updated_time";
+
+    /**
+     * 唯一索引冲突时 创建时间是否更新
+     */
+    boolean whenDuplicateUpdateCreatedTime() default false;
 
 } 

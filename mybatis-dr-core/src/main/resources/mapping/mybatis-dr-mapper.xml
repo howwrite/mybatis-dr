@@ -43,7 +43,7 @@
     </sql>
 
     <!-- 插入记录 -->
-    <insert id="insert" parameterType="map">
+    <insert id="insert" parameterType="map" useGeneratedKeys="true" keyProperty="auto_gen_id">
         INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <foreach collection="params.entity" index="key" item="value">
@@ -58,7 +58,7 @@
     </insert>
 
     <!-- 插入记录 -->
-    <insert id="insertOrUpdate" parameterType="map">
+    <insert id="insertOrUpdate" parameterType="map" useGeneratedKeys="true" keyProperty="auto_gen_id">
         INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <foreach collection="params.entity" index="key" item="value">
@@ -79,15 +79,15 @@
     </insert>
 
     <!-- 批量插入记录 -->
-    <insert id="batchInsert" parameterType="map">
+    <insert id="batchInsert" useGeneratedKeys="true" keyProperty="entities.auto_gen_id">
         INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <foreach collection="params.entities[0]" index="key" item="value">
+            <foreach collection="entities[0]" index="key" item="value">
                 `${key}`,
             </foreach>
         </trim>
         VALUES
-        <foreach collection="params.entities" item="entity" separator=",">
+        <foreach collection="entities" item="entity" separator=",">
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <foreach collection="entity" index="key" item="value">
                     #{value},
@@ -96,15 +96,15 @@
         </foreach>
     </insert>
     <!-- 批量插入记录 -->
-    <insert id="batchInsertOrUpdate" parameterType="map">
+    <insert id="batchInsertOrUpdate">
         INSERT INTO `${params.tableName}`
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <foreach collection="params.entities[0]" index="key" item="value">
+            <foreach collection="entities[0]" index="key" item="value">
                 `${key}`,
             </foreach>
         </trim>
         VALUES
-        <foreach collection="params.entities" item="entity" separator=",">
+        <foreach collection="entities" item="entity" separator=",">
             <trim prefix="(" suffix=")" suffixOverrides=",">
                 <foreach collection="entity" index="key" item="value">
                     #{value},
