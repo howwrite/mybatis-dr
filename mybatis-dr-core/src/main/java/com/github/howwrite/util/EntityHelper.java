@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.github.howwrite.annotation.DrColumn;
 import com.github.howwrite.annotation.DrColumnIgnore;
 import com.github.howwrite.annotation.DrTable;
+import com.github.howwrite.treasure.core.utils.NumberUtils;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
@@ -249,21 +250,21 @@ public class EntityHelper {
         if (fieldType == String.class) {
             return value.toString();
         } else if (fieldType == int.class || fieldType == Integer.class) {
-            return Integer.valueOf(value.toString());
+            return NumberUtils.buildBigDecimal(value.toString()).intValue();
         } else if (fieldType == double.class || fieldType == Double.class) {
-            return Double.valueOf(value.toString());
+            return NumberUtils.buildBigDecimal(value.toString()).doubleValue();
         } else if (fieldType == boolean.class || fieldType == Boolean.class) {
             return Boolean.valueOf(value.toString());
         } else if (fieldType == float.class || fieldType == Float.class) {
-            return Float.valueOf(value.toString());
+            return NumberUtils.buildBigDecimal(value.toString()).floatValue();
         } else if (fieldType == Short.class || fieldType == short.class) {
-            return Short.valueOf(value.toString());
+            return NumberUtils.buildBigDecimal(value.toString()).shortValue();
         } else if (fieldType == char.class || fieldType == Character.class) {
             return value.toString().charAt(0);
         } else if (fieldType == long.class || fieldType == Long.class) {
-            return Long.valueOf(value.toString());
+            return NumberUtils.buildBigDecimal(value.toString()).longValue();
         } else if (fieldType == BigDecimal.class) {
-            return new BigDecimal(value.toString());
+            return NumberUtils.buildBigDecimal(value.toString());
         } else {
             String jsonStr = JSON.toJSONString(value);
             return JSON.parseObject(jsonStr, fieldType);

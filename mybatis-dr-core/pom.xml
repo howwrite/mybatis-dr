@@ -25,6 +25,11 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.howwrite</groupId>
+            <artifactId>bag-core</artifactId>
+        </dependency>
         
         <!-- JUnit -->
         <dependency>

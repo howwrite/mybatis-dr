@@ -21,6 +21,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mybatis-dr.version>1.0-SNAPSHOT</mybatis-dr.version>
+        <treasure.version>2.0-SNAPSHOT</treasure.version>
     </properties>
 
     <dependencyManagement>
@@ -69,6 +70,18 @@
                 <groupId>com.github.howwrite</groupId>
                 <artifactId>mybatis-dr-core</artifactId>
                 <version>${mybatis-dr.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.howwrite</groupId>
+                <artifactId>bag-spring</artifactId>
+                <version>${treasure.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.howwrite</groupId>
+                <artifactId>bag-core</artifactId>
+                <version>${treasure.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
