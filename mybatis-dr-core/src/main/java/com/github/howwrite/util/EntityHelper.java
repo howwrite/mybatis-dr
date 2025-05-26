@@ -4,15 +4,13 @@ import com.alibaba.fastjson2.JSON;
 import com.github.howwrite.annotation.DrColumn;
 import com.github.howwrite.annotation.DrColumnIgnore;
 import com.github.howwrite.annotation.DrTable;
-import com.github.howwrite.treasure.core.utils.NumberUtils;
+import com.github.howwrite.converter.DefaultConverter;
+import com.github.howwrite.converter.DrConverter;
+import com.github.howwrite.model.FieldInfo;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.math.BigDecimal;
+import java.lang.reflect.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +29,8 @@ public class EntityHelper {
      */
     private static final Map<Class<?>, TableInfo<?>> TABLE_INFO_CACHE = new ConcurrentHashMap<>();
 
+    private static final Map<Class<? extends DrConverter>, DrConverter> CONVERTER_CACHE = new ConcurrentHashMap<>();
+
 
     /**
      * 获取表信息
@@ -43,7 +43,7 @@ public class EntityHelper {
         if (existValue != null) {
             return existValue;
         }
-        synchronized (entityClass) {
+        synchronized (entityClass.getName()) {
             TableInfo<T> existValue1 = (TableInfo<T>) TABLE_INFO_CACHE.get(entityClass);
             if (existValue1 != null) {
                 return existValue1;
@@ -61,9 +61,9 @@ public class EntityHelper {
             tableInfo.setIdColumnName(drTable.idColumnName());
 
             // 解析字段
-            Map<String, Field> fieldMap = new HashMap<>();
-            Map<String, Field> jsonFields = new HashMap<>();
-            Field idField = null;
+            Map<String, FieldInfo> fieldMap = new HashMap<>();
+            Map<String, FieldInfo> jsonFields = new HashMap<>();
+            FieldInfo idField = null;
             Set<String> whenDuplicateUpdateFields = new HashSet<>();
 
             Field[] fields = entityClass.getDeclaredFields();
@@ -81,10 +81,10 @@ public class EntityHelper {
                 if (drColumnAnnotation != null && drColumnAnnotation.query()) {
                     // 有@Field注解且是query的字段
                     String columnName = drColumnAnnotation.value();
-                    fieldMap.put(columnName, field);
+                    fieldMap.put(columnName, new FieldInfo(field, drColumnAnnotation.converter()));
 
                     if (drTable.idColumnName().equals(columnName)) {
-                        idField = field;
+                        idField = new FieldInfo(field, drColumnAnnotation.converter());
                         whenDuplicateUpdateFields.add(columnName);
                     }
 
@@ -100,7 +100,7 @@ public class EntityHelper {
                     if (columnName == null || columnName.isBlank()) {
                         columnName = field.getName();
                     }
-                    jsonFields.put(columnName, field);
+                    jsonFields.put(columnName, new FieldInfo(field, drColumnAnnotation == null ? DefaultConverter.class : drColumnAnnotation.converter()));
                 }
             }
 
@@ -136,14 +136,15 @@ public class EntityHelper {
         }
 
         // 处理普通字段
-        for (Map.Entry<String, Field> entry : tableInfo.getFieldMap().entrySet()) {
+        for (Map.Entry<String, FieldInfo> entry : tableInfo.getFieldMap().entrySet()) {
             String columnName = entry.getKey();
-            Field field = entry.getValue();
+            Field field = entry.getValue().field();
 
             try {
-                Object value = field.get(entity);
-                if (value != null) {
-                    result.put(columnName, value);
+                Object obj = findConverter(entry.getValue().drConverterClass()).serialize(entity);
+
+                if (obj != null) {
+                    result.put(columnName, obj);
                 }
             } catch (Exception e) {
                 LOGGER.error("Error getting field value: " + field.getName(), e);
@@ -151,12 +152,12 @@ public class EntityHelper {
         }
 
         // 处理json字段
-        for (Map.Entry<String, Field> entry : tableInfo.getJsonFieldMap().entrySet()) {
+        for (Map.Entry<String, FieldInfo> entry : tableInfo.getJsonFieldMap().entrySet()) {
             String columnName = entry.getKey();
-            Field field = entry.getValue();
+            Field field = entry.getValue().field();
 
             try {
-                Object value = field.get(entity);
+                Object value = findConverter(entry.getValue().drConverterClass()).serialize(entity);
                 if (value != null) {
                     featureMap.put(columnName, value);
                 }
@@ -198,13 +199,13 @@ public class EntityHelper {
             T entity = tableInfo.getEntityClass().getDeclaredConstructor().newInstance();
 
             // 处理带注解的字段
-            for (Map.Entry<String, Field> entry : tableInfo.getFieldMap().entrySet()) {
+            for (Map.Entry<String, FieldInfo> entry : tableInfo.getFieldMap().entrySet()) {
                 String columnName = entry.getKey();
-                Field field = entry.getValue();
+                FieldInfo fieldInfo = entry.getValue();
                 Object value = map.get(columnName);
 
                 if (value != null) {
-                    assignField(field, entity, value);
+                    assignField(fieldInfo, entity, value);
                 }
             }
 
@@ -212,13 +213,13 @@ public class EntityHelper {
             String featureJson = (String) map.get(tableInfo.getFeatureColumnName());
             if (featureJson != null && !featureJson.isBlank()) {
                 Map<String, Object> jsonFields = JSON.parseObject(featureJson);
-                for (Map.Entry<String, Field> entry : tableInfo.getJsonFieldMap().entrySet()) {
+                for (Map.Entry<String, FieldInfo> entry : tableInfo.getJsonFieldMap().entrySet()) {
                     String columnName = entry.getKey();
-                    Field field = entry.getValue();
+                    FieldInfo fieldInfo = entry.getValue();
                     Object value = jsonFields.get(columnName);
 
                     if (value != null) {
-                        assignField(field, entity, value);
+                        assignField(fieldInfo, entity, value);
                     }
                 }
             }
@@ -229,7 +230,8 @@ public class EntityHelper {
         }
     }
 
-    public static void assignField(Field field, Object target, Object value) throws IllegalAccessException {
+    public static void assignField(FieldInfo fieldInfo, Object target, Object value) throws IllegalAccessException {
+        Field field = fieldInfo.field();
         Type fieldType = field.getGenericType();
 
         if (isTypeCompatible(field, value)) {
@@ -237,37 +239,9 @@ public class EntityHelper {
             return;
         }
 
-        Object convertedValue = convertPrimitive(fieldType, value);
+        Object convertedValue = findConverter(fieldInfo.drConverterClass()).deserialize(fieldType, value);
         if (convertedValue != null) {
             field.set(target, convertedValue);
-        }
-    }
-
-    private static Object convertPrimitive(Type fieldType, Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (fieldType == String.class) {
-            return value.toString();
-        } else if (fieldType == int.class || fieldType == Integer.class) {
-            return NumberUtils.buildBigDecimal(value.toString()).intValue();
-        } else if (fieldType == double.class || fieldType == Double.class) {
-            return NumberUtils.buildBigDecimal(value.toString()).doubleValue();
-        } else if (fieldType == boolean.class || fieldType == Boolean.class) {
-            return Boolean.valueOf(value.toString());
-        } else if (fieldType == float.class || fieldType == Float.class) {
-            return NumberUtils.buildBigDecimal(value.toString()).floatValue();
-        } else if (fieldType == Short.class || fieldType == short.class) {
-            return NumberUtils.buildBigDecimal(value.toString()).shortValue();
-        } else if (fieldType == char.class || fieldType == Character.class) {
-            return value.toString().charAt(0);
-        } else if (fieldType == long.class || fieldType == Long.class) {
-            return NumberUtils.buildBigDecimal(value.toString()).longValue();
-        } else if (fieldType == BigDecimal.class) {
-            return NumberUtils.buildBigDecimal(value.toString());
-        } else {
-            String jsonStr = JSON.toJSONString(value);
-            return JSON.parseObject(jsonStr, fieldType);
         }
     }
 
@@ -312,5 +286,26 @@ public class EntityHelper {
         }
 
         return true;
+    }
+
+    private static DrConverter findConverter(Class<? extends DrConverter> clazz) {
+        DrConverter drConverter = CONVERTER_CACHE.get(clazz);
+        if (drConverter != null) {
+            return drConverter;
+        }
+        synchronized (clazz.getName()) {
+            DrConverter converter = CONVERTER_CACHE.get(clazz);
+            if (converter != null) {
+                return converter;
+            }
+            try {
+                DrConverter newInstance = clazz.getDeclaredConstructor().newInstance();
+                CONVERTER_CACHE.put(clazz, newInstance);
+                return newInstance;
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

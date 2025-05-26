@@ -1,6 +1,7 @@
 package com.github.howwrite.util;
 
-import java.lang.reflect.Field;
+import com.github.howwrite.model.FieldInfo;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -49,14 +50,14 @@ public class TableInfo<T> {
     /**
      * 字段映射，key为数据库列名，value为Java的成员反射
      */
-    private Map<String, Field> fieldMap;
+    private Map<String, FieldInfo> fieldMap;
 
     /**
      * JSON字段列表，这些字段将被合并到feature字段中
      */
-    private Map<String, Field> jsonFieldMap;
+    private Map<String, FieldInfo> jsonFieldMap;
 
-    private Field idField;
+    private FieldInfo idField;
 
     /**
      * 冲突时需要更新的字段名称
@@ -95,19 +96,19 @@ public class TableInfo<T> {
         this.entityClass = entityClass;
     }
 
-    public Map<String, Field> getFieldMap() {
+    public Map<String, FieldInfo> getFieldMap() {
         return fieldMap;
     }
 
-    public void setFieldMap(Map<String, Field> fieldMap) {
+    public void setFieldMap(Map<String, FieldInfo> fieldMap) {
         this.fieldMap = fieldMap;
     }
 
-    public Map<String, Field> getJsonFieldMap() {
+    public Map<String, FieldInfo> getJsonFieldMap() {
         return jsonFieldMap;
     }
 
-    public void setJsonFieldMap(Map<String, Field> jsonFieldMap) {
+    public void setJsonFieldMap(Map<String, FieldInfo> jsonFieldMap) {
         this.jsonFieldMap = jsonFieldMap;
     }
 
@@ -143,11 +144,11 @@ public class TableInfo<T> {
         this.idColumnName = idColumnName;
     }
 
-    public Field getIdField() {
+    public FieldInfo getIdField() {
         return idField;
     }
 
-    public void setIdField(Field idField) {
+    public void setIdField(FieldInfo idField) {
         this.idField = idField;
     }
 }

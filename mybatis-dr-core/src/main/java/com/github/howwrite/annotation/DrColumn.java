@@ -1,8 +1,11 @@
 package com.github.howwrite.annotation;
 
+import com.github.howwrite.converter.DefaultConverter;
+import com.github.howwrite.converter.DrConverter;
 import com.github.howwrite.mapper.DynamicSqlMapper;
 
 import java.lang.annotation.*;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,11 +34,13 @@ public @interface DrColumn {
     /**
      * 写入冲突时是否更新，使用以下两个api时可用
      * {@link DynamicSqlMapper#insertOrUpdate(Map)}
-     * {@link DynamicSqlMapper#batchInsertOrUpdate(Map)}
+     * {@link DynamicSqlMapper#batchInsertOrUpdate(Map, List)}
      * <p>
      * 默认都是冲突时更新，仅当{@link #query()} == true时可用，不是true时是在json中
      * <p>
      * 创建时间会特殊处理，默认索引冲突时不会更新，需要更新时除了将此配置置为true，还需要更改这个api {@link DrTable#whenDuplicateUpdateCreatedTime()}
      */
     boolean whenDuplicateUpdate() default true;
+
+    Class<? extends DrConverter> converter() default DefaultConverter.class;
 } 

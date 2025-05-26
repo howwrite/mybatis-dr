@@ -2,12 +2,12 @@ package com.github.howwrite.mybatis.dr.starter;
 
 import com.github.howwrite.constant.MybatisDrContent;
 import com.github.howwrite.mapper.DynamicSqlMapper;
+import com.github.howwrite.model.FieldInfo;
 import com.github.howwrite.query.QueryCondition;
 import com.github.howwrite.treasure.spring.utils.SpringUtils;
 import com.github.howwrite.util.EntityHelper;
 import com.github.howwrite.util.TableInfo;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +150,7 @@ public class DrRepository {
     }
 
     private static void writeAutoGenId(TableInfo<?> tableInfo, Object entity, Map<String, Object> params) {
-        Field idField = tableInfo.getIdField();
+        FieldInfo idField = tableInfo.getIdField();
         if (idField == null) {
             return;
         }
