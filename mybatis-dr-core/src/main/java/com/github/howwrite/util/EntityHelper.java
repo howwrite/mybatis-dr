@@ -141,7 +141,7 @@ public class EntityHelper {
             Field field = entry.getValue().field();
 
             try {
-                Object obj = findConverter(entry.getValue().drConverterClass()).serialize(entity);
+                Object obj = findConverter(entry.getValue().drConverterClass()).serialize(field.get(entity));
 
                 if (obj != null) {
                     result.put(columnName, obj);
@@ -157,7 +157,7 @@ public class EntityHelper {
             Field field = entry.getValue().field();
 
             try {
-                Object value = findConverter(entry.getValue().drConverterClass()).serialize(entity);
+                Object value = findConverter(entry.getValue().drConverterClass()).serialize(field.get(entity));
                 if (value != null) {
                     featureMap.put(columnName, value);
                 }
