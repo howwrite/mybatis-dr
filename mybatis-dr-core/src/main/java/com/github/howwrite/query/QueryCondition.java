@@ -2,8 +2,10 @@ package com.github.howwrite.query;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 查询条件基础类，用于生成查询条件
@@ -76,6 +78,11 @@ public abstract class QueryCondition<T> {
      * 排序字段列表
      */
     private final List<Order> orders = new ArrayList<>();
+
+    /**
+     * select的key，没有就是*
+     */
+    private SelectKey[] selectKeys;
 
     private Integer limit;
 
@@ -251,6 +258,18 @@ public abstract class QueryCondition<T> {
         return this;
     }
 
+    public QueryCondition<T> selectKey(SelectKey... keys) {
+        this.selectKeys = keys;
+        return this;
+    }
+
+    public String calSelectKeys() {
+        if (selectKeys == null) {
+            return null;
+        }
+        return Arrays.stream(selectKeys).map(SelectKey::getColumnName).distinct().collect(Collectors.joining(","));
+    }
+
     public QueryCondition<T> desc(String field) {
         return addOrder(field, "desc");
     }
@@ -361,6 +380,18 @@ public abstract class QueryCondition<T> {
 
         public void setValue(Object value) {
             this.value = value;
+        }
+    }
+
+    public static class SelectKey {
+        private final String columnName;
+
+        public SelectKey(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
         }
     }
 }

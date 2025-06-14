@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.howwrite.mapper.DynamicSqlMapper">
+    <sql id="dynamicSelectClause">
+        <choose>
+            <when test="params.condition.selectKeys != null and params.condition.selectKeys.size() > 0">
+                ${params.condition.calSelectKeys()}
+            </when>
+            <otherwise>
+                *
+            </otherwise>
+        </choose>
+    </sql>
 
     <sql id="queryCondition">
         <where>
@@ -154,7 +164,9 @@
 
     <!-- 根据条件查询记录 -->
     <select id="findByCondition" parameterType="map" resultType="map">
-        SELECT * FROM `${params.tableName}`
+        SELECT
+        <include refid="dynamicSelectClause"/>
+        FROM `${params.tableName}`
         <include refid="queryCondition"/>
         <include refid="limitAndOffset"/>
     </select>
@@ -162,7 +174,9 @@
 
     <!-- 根据条件查询记录数 -->
     <select id="count" parameterType="map" resultType="long">
-        SELECT COUNT(*) FROM `${params.tableName}`
+        SELECT COUNT(
+        <include refid="dynamicSelectClause"/>
+        ) FROM `${params.tableName}`
         <include refid="queryCondition"/>
     </select>
 </mapper> 

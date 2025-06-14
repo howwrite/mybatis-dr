@@ -34,6 +34,7 @@ public class QueryClassProcessor extends AbstractProcessor {
             if (element.getKind() != ElementKind.CLASS) {
                 continue;
             }
+            DrTable drTable = element.getAnnotation(DrTable.class);
 
             TypeElement classElement = (TypeElement) element;
             String packageName = processingEnv.getElementUtils().getPackageOf(classElement).toString();
@@ -54,14 +55,15 @@ public class QueryClassProcessor extends AbstractProcessor {
                     String columnName = drColumnAnnotation.value();
 
                     String fieldType = field.asType().toString();
+                    boolean query = drColumnAnnotation.query();
 
-                    queryableFields.add(new FieldInfo(fieldName, columnName, fieldType));
+                    queryableFields.add(new FieldInfo(fieldName, columnName, fieldType, query));
                 }
             }
 
             // 生成查询类
             try {
-                generateQueryClass(packageName, className, queryClassName, queryableFields);
+                generateQueryClass(drTable, packageName, className, queryClassName, queryableFields);
             } catch (IOException e) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
                         "Error generating query class: " + e.getMessage(), element);
@@ -74,13 +76,14 @@ public class QueryClassProcessor extends AbstractProcessor {
     /**
      * 生成查询类
      *
+     * @param drTable
      * @param packageName     包名
      * @param className       类名
      * @param queryClassName  查询类名
      * @param queryableFields 可查询字段
      * @throws IOException IO异常
      */
-    private void generateQueryClass(String packageName, String className, String queryClassName,
+    private void generateQueryClass(DrTable drTable, String packageName, String className, String queryClassName,
                                     List<FieldInfo> queryableFields) throws IOException {
         JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(packageName + "." + queryClassName);
 
@@ -112,7 +115,7 @@ public class QueryClassProcessor extends AbstractProcessor {
 
             // 为每个字段生成查询方法
             for (FieldInfo field : queryableFields) {
-                generateFieldQueryMethods(out, queryClassName, field);
+                generateFieldQueryMethods(out, drTable, queryClassName, field);
             }
 
             // 类结束
@@ -124,14 +127,21 @@ public class QueryClassProcessor extends AbstractProcessor {
      * 为字段生成查询方法
      *
      * @param out            输出流
-     * @param queryClassName
      * @param field          字段信息
      */
-    private void generateFieldQueryMethods(PrintWriter out, String queryClassName, FieldInfo field) {
+    private void generateFieldQueryMethods(PrintWriter out, DrTable drTable, String queryClassName, FieldInfo field) {
         String fieldName = field.getFieldName();
         String columnName = field.getColumnName();
         String capitalizedFieldName = capitalize(fieldName);
         String fieldType = getSimpleTypeName(field.getFieldType());
+
+        out.println("   public SelectKey select" + capitalizedFieldName + " = new SelectKey(\"" + (field.isQueryField() ? columnName : drTable.featureColumnName()) + "\");");
+        out.println();
+
+        if (!field.isQueryField()) {
+            // 非查询字段没有后面的条件
+            return;
+        }
 
         // 等于
         out.println("    /**");
@@ -390,11 +400,13 @@ public class QueryClassProcessor extends AbstractProcessor {
         private final String fieldName;
         private final String columnName;
         private final String fieldType;
+        private final boolean queryField;
 
-        public FieldInfo(String fieldName, String columnName, String fieldType) {
+        public FieldInfo(String fieldName, String columnName, String fieldType, boolean queryField) {
             this.fieldName = fieldName;
             this.columnName = columnName;
             this.fieldType = fieldType;
+            this.queryField = queryField;
         }
 
         public String getFieldName() {
@@ -407,6 +419,10 @@ public class QueryClassProcessor extends AbstractProcessor {
 
         public String getFieldType() {
             return fieldType;
+        }
+
+        public boolean isQueryField() {
+            return queryField;
         }
 
         public String getClassName() {
