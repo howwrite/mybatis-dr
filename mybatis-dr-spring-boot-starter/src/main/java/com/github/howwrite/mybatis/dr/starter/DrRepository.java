@@ -11,6 +11,7 @@ import com.github.howwrite.util.TableInfo;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -128,17 +129,15 @@ public class DrRepository {
     }
 
 
-    public static <T> T findOne(QueryCondition<T> condition) {
+    public static <T> Optional<T> findOne(QueryCondition<T> condition) {
         TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(condition.currentEntityClass());
         condition.setLimit(1);
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
         params.put("condition", condition);
         params.put("logicDelete", tableInfo.getLogicDelete());
-        return getDynamicSqlMapper().findByCondition(params)
-                .stream().map(it -> EntityHelper.convertToEntity(it, tableInfo)).findFirst().orElse(null);
+        return getDynamicSqlMapper().findByCondition(params).stream().map(it -> EntityHelper.convertToEntity(it, tableInfo)).findFirst();
     }
-
 
     public static long count(QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());

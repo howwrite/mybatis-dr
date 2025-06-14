@@ -7,6 +7,7 @@ import com.github.howwrite.annotation.DrTable;
 import com.github.howwrite.converter.DefaultConverter;
 import com.github.howwrite.converter.DrConverter;
 import com.github.howwrite.model.FieldInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
@@ -97,7 +98,7 @@ public class EntityHelper {
                 } else {
                     // 否则是json中的字段
                     String columnName = Optional.ofNullable(drColumnAnnotation).map(DrColumn::value).orElse(null);
-                    if (columnName == null || columnName.isBlank()) {
+                    if (StringUtils.isBlank(columnName)) {
                         columnName = field.getName();
                     }
                     jsonFields.put(columnName, new FieldInfo(field, drColumnAnnotation == null ? DefaultConverter.class : drColumnAnnotation.converter()));
@@ -138,10 +139,10 @@ public class EntityHelper {
         // 处理普通字段
         for (Map.Entry<String, FieldInfo> entry : tableInfo.getFieldMap().entrySet()) {
             String columnName = entry.getKey();
-            Field field = entry.getValue().field();
+            Field field = entry.getValue().getField();
 
             try {
-                Object obj = findConverter(entry.getValue().drConverterClass()).serialize(field.get(entity));
+                Object obj = findConverter(entry.getValue().getDrConverterClass()).serialize(field.get(entity));
 
                 if (obj != null) {
                     result.put(columnName, obj);
@@ -154,10 +155,10 @@ public class EntityHelper {
         // 处理json字段
         for (Map.Entry<String, FieldInfo> entry : tableInfo.getJsonFieldMap().entrySet()) {
             String columnName = entry.getKey();
-            Field field = entry.getValue().field();
+            Field field = entry.getValue().getField();
 
             try {
-                Object value = findConverter(entry.getValue().drConverterClass()).serialize(field.get(entity));
+                Object value = findConverter(entry.getValue().getDrConverterClass()).serialize(field.get(entity));
                 if (value != null) {
                     featureMap.put(columnName, value);
                 }
@@ -211,7 +212,7 @@ public class EntityHelper {
 
             // 处理JSON字段
             String featureJson = (String) map.get(tableInfo.getFeatureColumnName());
-            if (featureJson != null && !featureJson.isBlank()) {
+            if (StringUtils.isNotBlank(featureJson)) {
                 Map<String, Object> jsonFields = JSON.parseObject(featureJson);
                 for (Map.Entry<String, FieldInfo> entry : tableInfo.getJsonFieldMap().entrySet()) {
                     String columnName = entry.getKey();
@@ -231,7 +232,7 @@ public class EntityHelper {
     }
 
     public static void assignField(FieldInfo fieldInfo, Object target, Object value) throws IllegalAccessException {
-        Field field = fieldInfo.field();
+        Field field = fieldInfo.getField();
         Type fieldType = field.getGenericType();
 
         if (isTypeCompatible(field, value)) {
@@ -239,7 +240,7 @@ public class EntityHelper {
             return;
         }
 
-        Object convertedValue = findConverter(fieldInfo.drConverterClass()).deserialize(fieldType, value);
+        Object convertedValue = findConverter(fieldInfo.getDrConverterClass()).deserialize(fieldType, value);
         if (convertedValue != null) {
             field.set(target, convertedValue);
         }
