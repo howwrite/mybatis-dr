@@ -35,6 +35,13 @@ public class MybatisDrTest extends BaseTest {
         Assertions.assertEquals(entity.getBirthday(), user.get().getBirthday());
         Assertions.assertTrue(Math.abs(entity.getLastLoginTime().getNano() - user.get().getLastLoginTime().getNano()) <= 1000);
         Assertions.assertEquals(entity.getAddress(), user.get().getAddress());
+
+        user = DrRepository.findOne(new UserQuery().eqName("v").selectKey(UserQuery.selectName));
+        Assertions.assertTrue(user.isPresent());
+        Assertions.assertEquals(entity.getName(), user.get().getName());
+        Assertions.assertNull(user.get().getBirthday());
+        Assertions.assertNull(user.get().getLastLoginTime());
+        Assertions.assertNull(user.get().getAddress());
     }
 
     @Test
