@@ -135,7 +135,7 @@ public class QueryClassProcessor extends AbstractProcessor {
         String capitalizedFieldName = capitalize(fieldName);
         String fieldType = getSimpleTypeName(field.getFieldType());
 
-        out.println("   public SelectKey select" + capitalizedFieldName + " = new SelectKey(\"" + (field.isQueryField() ? columnName : drTable.featureColumnName()) + "\");");
+        out.println("   public static SelectKey select" + capitalizedFieldName + " = new SelectKey(\"" + (field.isQueryField() ? columnName : drTable.featureColumnName()) + "\");");
         out.println();
 
         if (!field.isQueryField()) {

@@ -264,8 +264,8 @@ public abstract class QueryCondition<T> {
     }
 
     public String calSelectKeys() {
-        if (selectKeys == null) {
-            return null;
+        if (selectKeys == null || selectKeys.length == 0) {
+            return "*";
         }
         return Arrays.stream(selectKeys).map(SelectKey::getColumnName).distinct().collect(Collectors.joining(","));
     }

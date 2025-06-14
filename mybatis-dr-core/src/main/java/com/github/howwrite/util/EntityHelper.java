@@ -7,6 +7,7 @@ import com.github.howwrite.annotation.DrTable;
 import com.github.howwrite.converter.DefaultConverter;
 import com.github.howwrite.converter.DrConverter;
 import com.github.howwrite.model.FieldInfo;
+import com.github.howwrite.model.IgnoreCaseField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
@@ -195,6 +196,8 @@ public class EntityHelper {
         if (map == null) {
             return null;
         }
+        Map<IgnoreCaseField, Object> fieldMap = new HashMap<>();
+        map.forEach((key, value) -> fieldMap.put(new IgnoreCaseField(key), value));
 
         try {
             T entity = tableInfo.getEntityClass().getDeclaredConstructor().newInstance();
@@ -203,7 +206,7 @@ public class EntityHelper {
             for (Map.Entry<String, FieldInfo> entry : tableInfo.getFieldMap().entrySet()) {
                 String columnName = entry.getKey();
                 FieldInfo fieldInfo = entry.getValue();
-                Object value = map.get(columnName);
+                Object value = fieldMap.get(new IgnoreCaseField(columnName));
 
                 if (value != null) {
                     assignField(fieldInfo, entity, value);
@@ -211,7 +214,7 @@ public class EntityHelper {
             }
 
             // 处理JSON字段
-            String featureJson = (String) map.get(tableInfo.getFeatureColumnName());
+            String featureJson = (String) fieldMap.get(new IgnoreCaseField(tableInfo.getFeatureColumnName()));
             if (StringUtils.isNotBlank(featureJson)) {
                 Map<String, Object> jsonFields = JSON.parseObject(featureJson);
                 for (Map.Entry<String, FieldInfo> entry : tableInfo.getJsonFieldMap().entrySet()) {
