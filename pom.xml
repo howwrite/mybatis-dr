@@ -14,7 +14,7 @@
     <modules>
         <module>mybatis-dr-core</module>
         <module>mybatis-dr-spring-boot-starter</module>
-        <module>mybatis-dr-test</module>
+        <module>mybatis-dr-core-processor</module>
     </modules>
 
     <properties>
@@ -70,6 +70,11 @@
             <dependency>
                 <groupId>com.github.howwrite</groupId>
                 <artifactId>mybatis-dr-core</artifactId>
+                <version>${mybatis-dr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.howwrite</groupId>
+                <artifactId>mybatis-dr-core-processor</artifactId>
                 <version>${mybatis-dr.version}</version>
             </dependency>
             <dependency>
