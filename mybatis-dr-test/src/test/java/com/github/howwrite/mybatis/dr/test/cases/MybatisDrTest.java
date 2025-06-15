@@ -89,9 +89,7 @@ public class MybatisDrTest extends BaseTest {
     @Test
     public void test_batchInsertOrUpdate_mixedData() {
         // 创建一些新用户和一些已存在的用户
-        UserQuery userQuery = new UserQuery();
-        userQuery.setLimit(2);
-        List<User> existingUsers = DrRepository.findByCondition(userQuery);
+        List<User> existingUsers = DrRepository.findByCondition(new UserQuery().setLimit(2));
         List<User> newUsers = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     User u = new User();
@@ -113,6 +111,12 @@ public class MybatisDrTest extends BaseTest {
             Optional<User> found = DrRepository.findOne(new UserQuery().eqName(u.getName()));
             Assertions.assertTrue(found.isPresent());
         });
+
+        existingUsers = DrRepository.findByCondition(new UserQuery().setLimit(2));
+        Assertions.assertEquals(2, existingUsers.size());
+
+        existingUsers = DrRepository.findByCondition(new UserQuery().setLimit(1));
+        Assertions.assertEquals(1, existingUsers.size());
     }
 
     @Test
