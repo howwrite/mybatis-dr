@@ -209,7 +209,6 @@ batchInsertOrUpdate(list);
 ### Insert Or Update 精细控制
 
 ```java
-
 @DrColumn(value = "last_login_time", whenDuplicateUpdate = false)
 private LocalDateTime lastLoginTime;
 
@@ -229,7 +228,7 @@ insertOrUpdate(u); // 若唯一索引冲突，只按允许的列更新
 
 ### JSON 扩展字段
 
-未声明 `@DrColumn` 的字段会自动写入 `feature`。例如：
+未声明 `@DrColumn` 或者`@DrColumn(query=false)` 的字段会自动写入 `feature`。例如：
 
 ```java
 
