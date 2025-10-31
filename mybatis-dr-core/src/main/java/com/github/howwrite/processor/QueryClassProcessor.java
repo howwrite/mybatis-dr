@@ -6,7 +6,6 @@ import com.github.howwrite.annotation.DrTable;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -25,8 +24,12 @@ import java.util.Set;
  * @author mybatis-dr
  */
 @SupportedAnnotationTypes("com.github.howwrite.annotation.DrTable")
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class QueryClassProcessor extends AbstractProcessor {
+
+    @Override
+    public SourceVersion getSupportedSourceVersion() {
+        return SourceVersion.latest();
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -126,8 +129,8 @@ public class QueryClassProcessor extends AbstractProcessor {
     /**
      * 为字段生成查询方法
      *
-     * @param out            输出流
-     * @param field          字段信息
+     * @param out   输出流
+     * @param field 字段信息
      */
     private void generateFieldQueryMethods(PrintWriter out, DrTable drTable, String queryClassName, FieldInfo field) {
         String fieldName = field.getFieldName();
