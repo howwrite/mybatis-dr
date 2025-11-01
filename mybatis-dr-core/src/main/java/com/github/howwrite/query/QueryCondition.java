@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  *
  * @author mybatis-dr
  */
-public abstract class QueryCondition<T, ChildType extends QueryCondition<T, ChildType>> {
+public abstract class QueryCondition<T> {
 
     /**
      * 等于
@@ -93,10 +93,10 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      */
     public abstract Class<T> currentEntityClass();
 
-    public ChildType setPageInfo(int pageNo, int pageSize) {
+    public QueryCondition<T> setPageInfo(int pageNo, int pageSize) {
         offset = (pageNo - 1) * pageSize;
         limit = pageSize;
-        return (ChildType) this;
+        return this;
     }
 
     /**
@@ -107,9 +107,9 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value    值
      * @return 当前对象
      */
-    public ChildType addCondition(String field, String operator, Object value) {
+    public QueryCondition<T> addCondition(String field, String operator, Object value) {
         conditions.add(new Condition(field, operator, value));
-        return (ChildType) this;
+        return this;
     }
 
     /**
@@ -119,7 +119,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType eq(String field, Object value) {
+    public QueryCondition<T> eq(String field, Object value) {
         return addCondition(field, OPERATOR_EQ, value);
     }
 
@@ -130,7 +130,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType ne(String field, Object value) {
+    public QueryCondition<T> ne(String field, Object value) {
         return addCondition(field, OPERATOR_NE, value);
     }
 
@@ -141,7 +141,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType gt(String field, Object value) {
+    public QueryCondition<T> gt(String field, Object value) {
         return addCondition(field, OPERATOR_GT, value);
     }
 
@@ -152,7 +152,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType ge(String field, Object value) {
+    public QueryCondition<T> ge(String field, Object value) {
         return addCondition(field, OPERATOR_GE, value);
     }
 
@@ -163,7 +163,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType lt(String field, Object value) {
+    public QueryCondition<T> lt(String field, Object value) {
         return addCondition(field, OPERATOR_LT, value);
     }
 
@@ -174,7 +174,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType le(String field, Object value) {
+    public QueryCondition<T> le(String field, Object value) {
         return addCondition(field, OPERATOR_LE, value);
     }
 
@@ -185,7 +185,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param values 值集合
      * @return 当前对象
      */
-    public ChildType in(String field, Collection<?> values) {
+    public QueryCondition<T> in(String field, Collection<?> values) {
         return addCondition(field, OPERATOR_IN, values);
     }
 
@@ -196,7 +196,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param values 值集合
      * @return 当前对象
      */
-    public ChildType notIn(String field, Collection<?> values) {
+    public QueryCondition<T> notIn(String field, Collection<?> values) {
         return addCondition(field, OPERATOR_NOT_IN, values);
     }
 
@@ -207,7 +207,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType like(String field, String value) {
+    public QueryCondition<T> like(String field, String value) {
         return addCondition(field, OPERATOR_LIKE, "%" + value + "%");
     }
 
@@ -218,7 +218,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType likeLeft(String field, String value) {
+    public QueryCondition<T> likeLeft(String field, String value) {
         return addCondition(field, OPERATOR_LIKE, "%" + value);
     }
 
@@ -229,7 +229,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param value 值
      * @return 当前对象
      */
-    public ChildType likeRight(String field, String value) {
+    public QueryCondition<T> likeRight(String field, String value) {
         return addCondition(field, OPERATOR_LIKE, value + "%");
     }
 
@@ -239,7 +239,7 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param field 字段名
      * @return 当前对象
      */
-    public ChildType isNull(String field) {
+    public QueryCondition<T> isNull(String field) {
         return addCondition(field, OPERATOR_IS_NULL, null);
     }
 
@@ -249,18 +249,18 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
      * @param field 字段名
      * @return 当前对象
      */
-    public ChildType isNotNull(String field) {
+    public QueryCondition<T> isNotNull(String field) {
         return addCondition(field, OPERATOR_IS_NOT_NULL, null);
     }
 
-    public ChildType addOrder(String field, String orderMode) {
+    public QueryCondition<T> addOrder(String field, String orderMode) {
         orders.add(new Order(field, orderMode));
-        return (ChildType) this;
+        return this;
     }
 
-    public ChildType selectKey(SelectKey... keys) {
+    public QueryCondition<T> selectKey(SelectKey... keys) {
         this.selectKeys = keys;
-        return (ChildType) this;
+        return this;
     }
 
     public String calSelectKeys() {
@@ -270,12 +270,12 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
         return Arrays.stream(selectKeys).map(SelectKey::getColumnName).distinct().collect(Collectors.joining(","));
     }
 
-    public ChildType desc(String field) {
+    public QueryCondition<T> desc(String field) {
         return addOrder(field, "desc");
     }
 
 
-    public ChildType asc(String field) {
+    public QueryCondition<T> asc(String field) {
         return addOrder(field, "asc");
     }
 
@@ -291,9 +291,9 @@ public abstract class QueryCondition<T, ChildType extends QueryCondition<T, Chil
         return limit;
     }
 
-    public ChildType setLimit(int limit) {
+    public QueryCondition<T> setLimit(int limit) {
         this.limit = limit;
-        return (ChildType) this;
+        return this;
     }
 
     public List<Condition> getConditions() {

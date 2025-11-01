@@ -104,7 +104,7 @@ public class QueryClassProcessor extends AbstractProcessor {
             out.println("/**");
             out.println(" * " + className + "的查询类，由mybatis-dr自动生成");
             out.println(" */");
-            out.println("public class " + queryClassName + " extends QueryCondition<" + packageName + "." + className + ", " + queryClassName + "> {");
+            out.println("public class " + queryClassName + " extends QueryCondition<" + packageName + "." + className + "> {");
             out.println();
 
             // currentEntityClass

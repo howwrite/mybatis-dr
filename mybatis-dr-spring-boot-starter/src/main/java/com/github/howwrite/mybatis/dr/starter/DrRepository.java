@@ -94,7 +94,7 @@ public class DrRepository {
     }
 
 
-    public static int update(Object entity, QueryCondition<?, ?> condition) {
+    public static int update(Object entity, QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(entity.getClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
@@ -105,7 +105,7 @@ public class DrRepository {
     }
 
 
-    public static int delete(QueryCondition<?, ?> condition) {
+    public static int delete(QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
@@ -118,7 +118,7 @@ public class DrRepository {
     }
 
 
-    public static <T> List<T> findByCondition(QueryCondition<T, ?> condition) {
+    public static <T> List<T> findByCondition(QueryCondition<T> condition) {
         TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
@@ -129,7 +129,7 @@ public class DrRepository {
     }
 
 
-    public static <T> Optional<T> findOne(QueryCondition<T, ?> condition) {
+    public static <T> Optional<T> findOne(QueryCondition<T> condition) {
         TableInfo<T> tableInfo = (TableInfo<T>) getTableInfo(condition.currentEntityClass());
         condition.setLimit(1);
         Map<String, Object> params = new HashMap<>();
@@ -139,7 +139,7 @@ public class DrRepository {
         return getDynamicSqlMapper().findByCondition(params).stream().map(it -> EntityHelper.convertToEntity(it, tableInfo)).findFirst();
     }
 
-    public static long count(QueryCondition<?, ?> condition) {
+    public static long count(QueryCondition<?> condition) {
         TableInfo<?> tableInfo = getTableInfo(condition.currentEntityClass());
         Map<String, Object> params = new HashMap<>();
         params.put("tableName", tableInfo.getTableName());
